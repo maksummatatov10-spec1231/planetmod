@@ -1,6 +1,29 @@
 ---------------------------------------------------------------------------------------------------
 -- Cataclysm (planet mod for Factorio Space Age)
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.2
+Date: 2026-08-30
+  Changes:
+    - Fixed load crash on Factorio 2.1: science packs are `type = "item"` in
+      2.x (the 1.1-era "tool" + durability pattern is gone). The mod declared
+      cataclysmic-science-pack as `type = "tool"` and copied
+      durability/durability_description_key/value from the vanilla
+      automation-science-pack, which has no such fields — the copied values
+      were nil, the keys never entered the property tree, and ToolPrototype
+      requires `durability`, so loading crashed with 'Key "durability" not
+      found in property tree'. The pack is now a plain item following the
+      vanilla 2.x science-pack pattern (incl. localised_description).
+    - tools/check_lua.py: check_prototype_fields() now ALSO enforces
+      REQUIRED_FIELDS per prototype type (fields without the "optional"
+      marker in lua-api 2.1.17) and OR_REQUIRED_FIELDS (technology needs
+      `unit` or `research_trigger`; simple-entity needs at least one graphic).
+      Both historical crashes (limited_to_one_game, tool durability) are
+      caught by the new check (break-tested). 85 prototypes checked.
+    - docs/API-AUDIT.md: finding #4 recorded; check description updated.
+    - Release archive rebuilt as cataclysm_0.2.2.zip (0.2.1 did not load and
+      was removed).
+
+---------------------------------------------------------------------------------------------------
 Version: 0.2.1
 Date: 2026-08-30
   Changes:

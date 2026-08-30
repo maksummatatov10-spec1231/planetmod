@@ -125,8 +125,19 @@ asteroid_spawn_influence, asteroid_spawn_definitions, persistent_ambient_sounds.
    туда оно не добавлено. Проверка `check_achievements` теперь требует его у
    produce-achievement и запрещает у produce-per-hour-achievement
    (break-test пройден).
+4. **`cataclysmic-science-pack` был `type = "tool"` с nil-копиями полей** —
+   в Factorio 2.x science pack — это `type = "item"` (в 1.1 был "tool" с
+   `durability`). Мод копировал `science.durability` и т.д. из
+   `data.raw.item["automation-science-pack"]`, где этих полей нет → nil →
+   ключ не попадает в property tree → ToolPrototype требует `durability`:
+   «Key "durability" not found in property tree at ROOT.tool...». **Исправлено**:
+   тип изменён на `item`, durability-поля удалены, паттерн = ванильный science
+   pack 2.x (включая `localised_description`). Урок: копирование поля из
+   ванильного прототипа, у которого его нет, даёт nil и молча роняет ключ —
+   добавлена проверка REQUIRED-полей (см. §6).
 
-Других расхождений не найдено: 84 прототипа мода прошли пословную сверку полей.
+Других расхождений не найдено: 85 прототипов мода прошли пословную сверку
+полей + проверку обязательных полей.
 
 ## 5. Types и Defines, используемые модом (сверено)
 
@@ -157,8 +168,14 @@ asteroid_spawn_influence, asteroid_spawn_definitions, persistent_ambient_sounds.
 - deepcopy-блоки (entities.lua, tiles.lua, lightning.lua) проверяются
   отчётом §1/§4, т.к. статически не видны — доноры верифицированы по ванили.
 
-Прогон: `python3 tools/check_lua.py` → `OK prototype fields checked: 84` →
+Прогон: `python3 tools/check_lua.py` → `OK prototype fields checked: 85` →
 `ALL CHECKS PASSED`.
+
+Помимо allowlist-ов, проверка теперь включает **REQUIRED_FIELDS** (обязательные
+поля каждого типа — в доках они без маркера «optional») и **OR_REQUIRED_FIELDS**
+(хотя бы одно из списка: у technology — `unit` или `research_trigger`; у
+simple-entity — хотя бы одна графика). Оба краша 0.2.1/0.2.2 были пропущены
+именно из-за отсутствия этой проверки; теперь они ловятся (break-test пройден).
 
 ## 7. Что делать при следующем релизе
 

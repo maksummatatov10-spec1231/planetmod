@@ -290,17 +290,21 @@ _ENTITY = _BASE | {
     "selection_box", "render_layer", "autoplace", "map_color",
 }
 
+# Fields shared by ItemPrototype and its children (ToolPrototype etc.).
+_ITEM_FIELDS = _BASE | {
+    "stack_size", "weight", "durability", "durability_description_key",
+    "durability_description_value", "place_result",
+    "place_as_equipment_result", "fuel_category", "burnt_result",
+    "spoil_result", "spoil_quality_min", "spoil_quality_max",
+    "spoil_quality_change", "dark_background_icons", "dark_background_icon",
+    "dark_background_icon_size", "rocket_launch_products",
+}
+
 # {prototype type: allowed top-level fields}. Only types the mod defines in
 # data stage with an explicit `type =` field are checked.
 PROTO_FIELDS = {
-    "item": _BASE | {
-        "stack_size", "weight", "durability", "durability_description_key",
-        "durability_description_value", "place_result",
-        "place_as_equipment_result", "fuel_category", "burnt_result",
-        "spoil_result", "spoil_quality_min", "spoil_quality_max",
-        "spoil_quality_change", "dark_background_icons", "dark_background_icon",
-        "dark_background_icon_size", "rocket_launch_products",
-    },
+    "item": _ITEM_FIELDS,
+    "tool": _ITEM_FIELDS,
     "fluid": _BASE | {
         "default_temperature", "max_temperature", "heat_capacity",
         "base_color", "flow_color", "visualization_color",
@@ -396,6 +400,40 @@ PROTO_FIELDS = {
     "bool-setting": _BASE | {"setting_type", "default_value"},
 }
 
+# ---------------------------------------------------------------------------
+# REQUIRED fields per prototype type.
+#
+# A field is REQUIRED when the lua-api docs list it without the "optional"
+# marker (or when the engine demands it, as proven by a load error), and the
+# vanilla data always sets it. Missing required keys crash the game load with
+# 'Key "..." not found in property tree at ROOT.<type>.<name>'.
+#
+# History (both caught by this table now):
+#   * produce-achievement without `limited_to_one_game` (0.2.1 crash);
+#   * tool (science pack) without `durability` (0.2.2 crash).
+# ---------------------------------------------------------------------------
+REQUIRED_FIELDS = {
+    "item": {"stack_size"},
+    "tool": {"durability"},
+    "fluid": {"default_temperature", "base_color", "flow_color"},
+    "recipe": {"categories", "results"},
+    "planet": {"distance", "orientation"},
+    "resource": {"stage_counts", "minable"},
+    "autoplace-control": {"category"},
+    "item-subgroup": {"group"},
+    "space-connection": {"from", "to"},
+    "noise-expression": {"expression"},
+    "noise-function": {"expression"},
+    "int-setting": {"setting_type", "default_value"},
+    "bool-setting": {"setting_type", "default_value"},
+}
+
+# At least one field of each tuple must be present.
+OR_REQUIRED_FIELDS = {
+    "technology": [("unit", "research_trigger")],
+    "simple-entity": [("picture", "animations", "pictures")],
+}
+
 
 def _table_type_str(field_value):
     if isinstance(field_value, astnodes.String):
@@ -437,12 +475,20 @@ def _extend_entries(tree):
                 yield entry.value
 
 
+def _entry_has_field(entry, key_name):
+    for field in entry.fields:
+        key = field.key
+        if isinstance(key, astnodes.Name) and key.id == key_name:
+            return True
+    return False
+
+
 def check_prototype_fields():
     """Every data-stage prototype the mod defines with an explicit `type`
-    must only use documented fields for that prototype type (allowlists
-    above, derived from lua-api 2.1.17 — see docs/API-AUDIT.md). Catches
-    dead fields like `resource_category` on autoplace-control (no such field)
-    before they ever reach the game."""
+    must (a) only use documented fields for that prototype type (allowlists
+    above, derived from lua-api 2.1.17 — see docs/API-AUDIT.md) and
+    (b) include every REQUIRED field of that type (missing required keys
+    crash loading with 'Key ... not found in property tree')."""
     checked = 0
     for path in all_lua_files():
         rel = os.path.relpath(path, ROOT)
@@ -466,6 +512,7 @@ def check_prototype_fields():
             t = _table_type_str(type_field)
             if t is None or t not in PROTO_FIELDS:
                 continue
+            name = _proto_name(entry)
             allowed = PROTO_FIELDS[t]
             for field in entry.fields:
                 key = field.key
@@ -474,7 +521,16 @@ def check_prototype_fields():
                 if key.id not in allowed:
                     fail("%s: %s '%s' has undocumented field `%s` "
                          "(lua-api 2.1.17, see docs/API-AUDIT.md)"
-                         % (rel, t, _proto_name(entry), key.id))
+                         % (rel, t, name, key.id))
+            for required in REQUIRED_FIELDS.get(t, ()):
+                if not _entry_has_field(entry, required):
+                    fail("%s: %s '%s' missing REQUIRED field `%s` "
+                         "(engine: 'Key ... not found in property tree')"
+                         % (rel, t, name, required))
+            for group in OR_REQUIRED_FIELDS.get(t, ()):
+                if not any(_entry_has_field(entry, k) for k in group):
+                    fail("%s: %s '%s' needs at least one of %s"
+                         % (rel, t, name, ", ".join(group)))
             checked += 1
     print("OK   prototype fields checked:", checked)
 

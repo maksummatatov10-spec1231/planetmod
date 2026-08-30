@@ -58,17 +58,21 @@ data:extend({
   },
 
   -- Science pack ------------------------------------------------------------
+  -- Science pack: in Factorio 2.x science packs are `type = "item"` (the 1.1
+  -- era "tool" + durability pattern is gone — automation-science-pack has no
+  -- durability fields). Keeping `tool` here crashed loading with 'Key
+  -- "durability" not found in property tree' (ToolPrototype requires
+  -- durability; the copied vanilla field was nil). Pattern: vanilla 2.x
+  -- science packs (base + space-age), verified in docs/API-AUDIT.md.
   {
-    type = "tool",
+    type = "item",
     name = "cataclysmic-science-pack",
+    localised_description = {"item-description.science-pack"},
     icon = "__cataclysm__/graphics/icons/cataclysmic-science-pack.png",
     icon_size = 128,
     subgroup = "science-pack",
     order = "k-a[cataclysmic-science-pack]",
     stack_size = science.stack_size,
-    durability = science.durability,
-    durability_description_key = science.durability_description_key,
-    durability_description_value = science.durability_description_value,
     weight = science.weight
   },
 
