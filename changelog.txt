@@ -1,6 +1,21 @@
 ---------------------------------------------------------------------------------------------------
 -- Cataclysm (planet mod for Factorio Space Age)
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 2026-08-30
+  Changes:
+    - Fixed load crash on Factorio 2.x: recipes used the pre-2.0 `category`
+      field; replaced with `categories = { ... }` (RecipePrototype merged
+      category + additional_categories into the categories table).
+    - Hardened vanilla-changes.lua: removed the `table.find` call (not used by
+      vanilla data in 2.x) in favour of a plain loop.
+    - tools/check_lua.py: new AST check enforces `categories` on every recipe
+      and rejects the legacy `category` field (verified against a deliberately
+      broken copy).
+    - Release archive rebuilt as cataclysm_0.1.1.zip (the 0.1.0 archive did
+      not load and was removed).
+
+---------------------------------------------------------------------------------------------------
 Version: 0.1.0
 Date: 2026-08-30
   Changes:
