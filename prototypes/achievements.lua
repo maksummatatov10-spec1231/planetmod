@@ -60,17 +60,20 @@ data:extend({
     type = "build-entity-achievement",
     name = "cataclysm-siphon-network",
     order = "a[progress]-h[cataclysm]-c[siphon-network]",
-    entity = "storm-siphon",
+    to_build = "storm-siphon",
     amount = 8,
     icon = "__cataclysm__/graphics/achievement/storm-siphon-network.png",
     icon_size = 128
   },
   {
-    type = "deplete-resource-achievement",
+    -- Scripted: DepleteResourceAchievementPrototype in 2.x has no `resource`
+    -- field (only amount), so the stormite-patch achievement is unlocked by
+    -- script via on_resource_depleted (see control.lua).
+    type = "produce-achievement",
     name = "cataclysm-deplete-stormite",
     order = "a[progress]-h[cataclysm]-d[deplete-stormite]",
-    resource = "stormite-ore",
-    amount = 1,
+    item_product = "cataclysmic-science-pack",
+    amount = 1000000000,
     icon = "__cataclysm__/graphics/achievement/deplete-stormite-patch.png",
     icon_size = 128
   },

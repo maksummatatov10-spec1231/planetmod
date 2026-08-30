@@ -1,6 +1,23 @@
 ---------------------------------------------------------------------------------------------------
 -- Cataclysm (planet mod for Factorio Space Age)
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2026-08-30
+  Changes:
+    - Fixed load crash on Factorio 2.x: build-entity-achievement uses the
+      `to_build` field (the pre-2.0 `entity` field is gone; "Siphon network"
+      achievement now uses `to_build = "storm-siphon"`).
+    - "Mined dry" achievement reworked: DepleteResourceAchievementPrototype in
+      2.x has no `resource` field (only amount), so the stormite-patch
+      achievement is now unlocked by script via on_resource_depleted when a
+      stormite-ore patch is depleted (semantics preserved).
+    - tools/check_lua.py: new AST check validates every achievement prototype
+      (required fields per type, rejects legacy `entity`/`resource` fields;
+      verified against deliberately broken copies).
+    - Release archive rebuilt as cataclysm_0.1.2.zip (the 0.1.1 archive did
+      not load and was removed).
+
+---------------------------------------------------------------------------------------------------
 Version: 0.1.1
 Date: 2026-08-30
   Changes:

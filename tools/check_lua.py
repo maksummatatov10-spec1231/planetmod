@@ -185,12 +185,80 @@ def _recipe_name(recipe_table, str_val):
     return name_field or "<unnamed>"
 
 
+def check_achievements():
+    """Achievement prototypes must match the Factorio 2.x fields:
+      * build-entity-achievement requires `to_build` (the pre-2.0 `entity`
+        field is gone and crashes loading).
+      * deplete-resource-achievement has no `resource` field in 2.x — using it
+        with `resource` silently loses the target; mod uses scripted unlock.
+      * change-surface-achievement requires `surface`.
+      * research-with-science-pack-achievement requires `science_pack`.
+      * produce-achievement / produce-per-hour-achievement require
+        `item_product` and `amount`."""
+    path = os.path.join(ROOT, "prototypes", "achievements.lua")
+    with open(path, "r", encoding="utf-8") as fh:
+        source = fh.read()
+    tree = ast.parse(source)
+
+    def field_value(table_node, key_name):
+        for field in table_node.fields:
+            key = field.key
+            if isinstance(key, astnodes.Name) and key.id == key_name:
+                return field.value
+        return None
+
+    def str_val(node):
+        if isinstance(node, astnodes.String):
+            v = node.s
+            if isinstance(v, bytes):
+                v = v.decode("utf-8")
+            return v
+        return None
+
+    def has_key(table_node, key_name):
+        for field in table_node.fields:
+            key = field.key
+            if isinstance(key, astnodes.Name) and key.id == key_name:
+                return True
+        return False
+
+    checked = 0
+    for node in ast.walk(tree):
+        if not isinstance(node, astnodes.Table):
+            continue
+        t = str_val(field_value(node, "type"))
+        if not t or not t.endswith("achievement"):
+            continue
+        checked += 1
+        name = str_val(field_value(node, "name")) or "<unnamed>"
+        if has_key(node, "entity"):
+            fail("achievement %s: legacy `entity` field; build-entity-achievement uses `to_build`" % name)
+        if t == "build-entity-achievement":
+            if field_value(node, "to_build") is None:
+                fail("achievement %s: build-entity-achievement requires `to_build`" % name)
+        elif t == "deplete-resource-achievement":
+            fail("achievement %s: deplete-resource-achievement has no `resource` field in 2.x; use scripted unlock" % name)
+        elif t == "change-surface-achievement":
+            if field_value(node, "surface") is None:
+                fail("achievement %s: change-surface-achievement requires `surface`" % name)
+        elif t == "research-with-science-pack-achievement":
+            if field_value(node, "science_pack") is None:
+                fail("achievement %s: research-with-science-pack-achievement requires `science_pack`" % name)
+        elif t in ("produce-achievement", "produce-per-hour-achievement"):
+            if field_value(node, "item_product") is None:
+                fail("achievement %s: %s requires `item_product`" % (name, t))
+            if field_value(node, "amount") is None:
+                fail("achievement %s: %s requires `amount`" % (name, t))
+    print("OK   achievements checked:", checked)
+
+
 def main():
     check_syntax()
     check_graphics_refs()
     check_locale_parity()
     check_recipe_unlock_coverage()
     check_recipe_categories()
+    check_achievements()
     check_icon_files()
     print()
     if failures:

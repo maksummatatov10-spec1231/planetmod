@@ -71,6 +71,9 @@ local function get_storage()
   if not s.charged_unlocked then
     s.charged_unlocked = {}
   end
+  if not s.deplete_unlocked then
+    s.deplete_unlocked = {}
+  end
   return s
 end
 
@@ -408,6 +411,34 @@ local function achievement_check_tick()
     end
   end
 end
+
+-- Depleted stormite patch ----------------------------------------------------
+-- Factorio 2.x DepleteResourceAchievementPrototype has no `resource` field,
+-- so "Mined dry" is unlocked here when a stormite-ore patch is depleted.
+
+local function unlock_for_connected_players(achievement_name)
+  for _, player in pairs(game.players) do
+    if player.connected then
+      unlock(player, achievement_name)
+    end
+  end
+end
+
+script.on_event(defines.events.on_resource_depleted, function(event)
+  local entity = event.entity
+  if not (entity and entity.valid) then
+    return
+  end
+  if entity.resource_name ~= "stormite-ore" then
+    return
+  end
+  local storage_table = get_storage()
+  if storage_table.deplete_unlocked[entity.force.index] then
+    return
+  end
+  storage_table.deplete_unlocked[entity.force.index] = true
+  unlock_for_connected_players("cataclysm-deplete-stormite")
+end)
 
 -- Master of the storm --------------------------------------------------------
 -- All cataclysmic technologies researched.
