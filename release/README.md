@@ -3,6 +3,14 @@
 Готовые к установке архивы мода. Файл вида `cataclysm_<version>.zip` положите
 в папку `mods/` вашей установки Factorio (не распаковывая).
 
+- `cataclysm_0.2.3.zip` — 0.2.3: исправлена битая ссылка `dying_explosion`
+  (`"small-explosion"` — имя 1.1-эры, в 2.x переименовано в
+  `"small-explosion-hit"`); удалены поля 1.1-эры у флюидов
+  (`pressure_to_speed_ratio`/`flow_to_energy_ratio` — нет в FluidPrototype
+  2.1.17). Новый валидатор `tools/validate_prototypes.py` — все 114
+  прототипов против схемы 2.1.17 и реального data.raw 2.x (обязательные
+  поля, OR-группы, enum'ы, лимиты, «Mandatory if», ВСЕ ссылки-имена,
+  неизвестные поля) + `--self-test` против классов исторических багов.
 - `cataclysm_0.2.2.zip` — 0.2.2: исправлен краш загрузки — science pack
   теперь `type = "item"` как в 2.x (был 1.1-эры "tool", где обязательна
   `durability`, а копия из ванили давала nil); проверка прототипов теперь

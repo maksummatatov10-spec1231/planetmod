@@ -10,6 +10,8 @@
 | Размеры иконок соответствуют icon_size | tools/check_icons.py (Pillow) | после графики |
 | Порядки (order) уникальны и ванильно-стилистичны | grep-проверки | после прототипов |
 | Ссылки на прототипы не битые (recipe→item, tech→prereq) | tools/check_refs.py (парсит наши data-файлы) | после прототипов |
+| Схема 2.1.17 против реального data.raw (114 прототипов): required/OR/enum/лимиты/«Mandatory if»/все ссылки-имена/неизвестные поля; self-test ловит классы исторических багов | `python3 tools/validate_prototypes.py` (+ `--self-test`) | после прототипов; встроен в `tools/make_release.py --check` |
+| Функциональный прогон data-стадии (настоящие data.lua/data-final-fixes.lua поверх ванили base+space-age) | `python3 tools/run_data_stage.py --vanilla /tmp/fd --mod . --out tools/out/data_raw_mod.json --defines-lua tools/out/defines.lua` | после прототипов |
 
 ## 2. Ручной QA на бинарнике 2.1.17 (документируем как чек-лист, запускается человеком)
 

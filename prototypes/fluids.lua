@@ -1,4 +1,8 @@
 -- Cataclysm — fluids.
+--
+-- NOTE (2.x): `pressure_to_speed_ratio` / `flow_to_energy_ratio` were removed
+-- from FluidPrototype in 2.0 (not in lua-api 2.1.17 docs, absent from all
+-- vanilla 2.x fluids) — the engine ignores them, so they are not defined here.
 
 data:extend({
   {
@@ -11,8 +15,6 @@ data:extend({
     heat_capacity = "0.1kJ",
     base_color = { r = 0.12, g = 0.43, b = 0.42 },
     flow_color = { r = 0.18, g = 0.88, b = 0.78 },
-    pressure_to_speed_ratio = 0.4,
-    flow_to_energy_ratio = 0.59,
     gas_temperature = 200
   },
   {
@@ -25,8 +27,6 @@ data:extend({
     heat_capacity = "0.2kJ",
     base_color = { r = 0.55, g = 0.85, b = 1.0 },
     flow_color = { r = 0.85, g = 1.0, b = 1.0 },
-    pressure_to_speed_ratio = 0.4,
-    flow_to_energy_ratio = 0.59,
     gas_temperature = 600
   }
 })

@@ -79,6 +79,22 @@ def build():
 
 
 def check(out):
+    # Run the docs+static prototype validator against the committed data dump
+    # (tools/out/data_raw_mod.json). The data stage harness is a separate,
+    # documented step (needs a vanilla 2.x data dir); the validator itself
+    # only needs the committed dump.
+    import subprocess
+    rc = subprocess.run(
+        [sys.executable, os.path.join("tools", "validate_prototypes.py"),
+         "--report", os.path.join("tools", "out", "audit_report.md")],
+        cwd=ROOT, capture_output=True, text=True)
+    print(rc.stdout)
+    if rc.returncode != 0:
+        print("FAIL: validate_prototypes.py reported errors")
+        print(rc.stderr)
+        sys.exit(1)
+    print("check: validate_prototypes.py PASS (0 errors)")
+
     required = [
         "info.json", "data.lua", "data-updates.lua", "data-final-fixes.lua",
         "control.lua", "settings.lua", "prototypes/planet.lua",

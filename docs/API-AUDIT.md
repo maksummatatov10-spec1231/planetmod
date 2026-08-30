@@ -16,14 +16,33 @@
    data-стадии (grep по `data.lua`, `data-updates.lua`, `data-final-fixes.lua`,
    `prototypes/*.lua`, `settings.lua`).
 2. Для каждого типа открыта страница прототипа в lua-api 2.1.17 и сверено
-   КАЖДОЕ поле, которое мод задаёт, с документацией.
+   КАЖДОЕ поле, которое мод задаёт, с документацией (конспект схемы —
+   `tools/out/docs_schema_notes.md`).
 3. Каждое поле дополнительно сверено с ванильными данными (тот же паттерн,
    что у Wube).
 4. Все deepcopy-сущности сверены с ванильными прототипами-донорами
    (offshore-pump, lightning-collector, foundry, electromagnetic-plant,
    steam-turbine, lightning, sand-3/dry-dirt/water/deepwater).
-5. Результат закреплён в `tools/check_lua.py` → `check_prototype_fields()`
-   (автоматическая проверка всех полей всех прототипов при каждом прогоне).
+5. Результат закреплён в трёх автоматических ступенях (воспроизводимо):
+
+   | Ступень | Инструмент | Что проверяет |
+   |---|---|---|
+   | 1. Доки | ручная сверка по lua-api 2.1.17 → `docs/API-AUDIT.md` + `tools/out/docs_schema_notes.md` | каждое поле каждого типа по официальной странице |
+   | 2. Код/статика | `tools/check_lua.py` (синтаксис, allowlist полей, REQUIRED/OR-поля, локали, рецепты) + `tools/validate_prototypes.py` (схема 2.1.17 + кросс-ссылки против реального data.raw 2.x) | обязательные поля, OR-группы, enum'ы, лимиты, «Mandatory if», битые ссылки, неизвестные поля |
+   | 3. Функциональный | `tools/run_data_stage.py` — исполняет настоящие data.lua/data-final-fixes.lua мода в Lua-рантайме поверх настоящих ванильных данных base+space-age | мод грузится без ошибок, 114 прототипов, лаборатории пропатчены |
+
+   Новый валидатор `tools/validate_prototypes.py` читает дамп реального
+   `data.raw` после загрузки мода (`tools/out/data_raw_mod.json`, включает
+   полный индекс имён ванили `names_by_type`) и проверяет каждый из 114
+   прототипов: обязательные поля, OR-группы, enum'ы, лимиты экземпляров,
+   документированные условия («Mandatory if …»), типы значений и ВСЕ
+   ссылки-имена (ингредиенты, результаты, категории, пререквизиты, эффекты,
+   place_result, minable.result, corpse, dying_explosion, damage.type,
+   fluid_box.filter, surface, from/to, lightning_types, выражения автоплейса,
+   map_gen_settings …). Прогон: `python3 tools/validate_prototypes.py`
+   (0 ошибок = PASS); `--self-test` доказывает, что проверка ловит классы
+   исторических багов (limited_to_one_game, durability, битые ссылки,
+   нарушение enum).
 
 ## 1. Типы прототипов, используемые модом (полный список)
 
@@ -34,8 +53,8 @@
 
 | Тип (док) | Файл мода | Поля мода | Вердикт |
 |---|---|---|---|
-| `item` (ItemPrototype) | items.lua | type, name, icon, icon_size, subgroup, order, stack_size, weight, durability, durability_description_key, durability_description_value, place_result | ✅ все поля документированы |
-| `fluid` (FluidPrototype) | fluids.lua | type, name, icon, icon_size, default_temperature, max_temperature, heat_capacity, base_color, flow_color, pressure_to_speed_ratio, flow_to_energy_ratio, gas_temperature | ✅ все поля документированы |
+| `item` (ItemPrototype) | items.lua | type, name, icon, icon_size, subgroup, order, stack_size, weight, place_result | ✅ stack_size — единственное обязательное поле; weight/place_result — optional (подтверждено 2.1.17) |
+| `fluid` (FluidPrototype) | fluids.lua | type, name, icon, icon_size, default_temperature, max_temperature, heat_capacity, base_color, flow_color, gas_temperature | ✅ required: default_temperature, base_color, flow_color; **удалены** `pressure_to_speed_ratio`/`flow_to_energy_ratio` — их НЕТ в FluidPrototype 2.1.17 и ни в одном ванильном флюиде 2.x (см. §4.6) |
 | `recipe` (RecipePrototype) | recipes.lua | type, name, ingredients, results, energy_required, enabled, categories, allow_productivity | ✅ `categories` — поле 2.x (проверка `check_recipe_categories`); `ingredients`/`results` — IngredientPrototype/ProductPrototype |
 | `recipe-category` (RecipeCategory) | recipe-categories.lua | type, name | ✅ «No new properties» |
 | `technology` (TechnologyPrototype) | technologies.lua | type, name, icon, icon_size, order, prerequisites, unit, effects, research_trigger | ✅ unit=TechnologyUnit, research_trigger=TechnologyTrigger(`craft-item`), effects=Modifier(`unlock-recipe`, `character-crafting-speed`, `change-recipe-productivity`) |
@@ -135,9 +154,32 @@ asteroid_spawn_influence, asteroid_spawn_definitions, persistent_ambient_sounds.
    pack 2.x (включая `localised_description`). Урок: копирование поля из
    ванильного прототипа, у которого его нет, даёт nil и молча роняет ключ —
    добавлена проверка REQUIRED-полей (см. §6).
+5. **`dying_explosion = "small-explosion"` у `condensate-extractor`**
+   (`prototypes/entities.lua`) — взрыв `"small-explosion"` существует только в
+   1.1; в 2.x ванильный прототип называется `"small-explosion-hit"`
+   (в `data.raw.explosion` 2.x такого имени нет; у донора
+   `offshore-pump` стоит `"offshore-pump-explosion"`). Битая ссылка на
+   прототип-имя: движок либо отклоняет ссылку при загрузке, либо молча теряет
+   эффект смерти — в обоих случаях это дефект. **Исправлено на
+   `"small-explosion-hit"`.** Поймано новым валидатором
+   `tools/validate_prototypes.py` (кросс-ссылка `dying_explosion` →
+   `names_by_type["explosion"]`); прежняя проверка сверяла только
+   существование поля в доке и такой класс багов не ловила.
+6. **`pressure_to_speed_ratio` / `flow_to_energy_ratio` в `prototypes/fluids.lua`**
+   — поля 1.1-эры: в FluidPrototype 2.1.17 их нет (полный список собственных
+   полей: icons/icon/icon_size, default_temperature, base_color, flow_color,
+   visualization_color, max_temperature, heat_capacity, fuel_value,
+   emissions_multiplier, gas_temperature, draw_as_glow, auto_barrel,
+   spent_fluid) и ни один ванильный флюид 2.x их не задаёт (grep по base +
+   space-age пуст). Движок игнорирует неизвестные поля, поэтому краха не
+   было, но мод нёс мёртвые поля. **Удалены** (0.2.3). Ловятся валидатором
+   как INFO (legacy-поля).
 
-Других расхождений не найдено: 85 прототипов мода прошли пословную сверку
-полей + проверку обязательных полей.
+После исправлений: `tools/validate_prototypes.py` → 0 ошибок, 1 warning
+(`exemption_rules` ссылается на `'wall'` — это зеркало ванильной Фулгоры
+`space-age/prototypes/planet/planet.lua`, где тоже стоит `"wall"` из 1.1;
+движок такие правила просто игнорирует). 114 прототипов мода прошли пословную
+сверку полей, проверку обязательных полей и проверку всех ссылок-имён.
 
 ## 5. Types и Defines, используемые модом (сверено)
 
@@ -158,30 +200,56 @@ asteroid_spawn_influence, asteroid_spawn_definitions, persistent_ambient_sounds.
   только в ванили-доноре), runtime-константы в control.lua
   (defines.events.*, defines.inventory.chest и т.д.) — вне прототипов.
 
-## 6. Автоматизация (tools/check_lua.py)
+## 6. Автоматизация (три ступени)
 
-Добавлена 8-я проверка `check_prototype_fields()`:
-- AST-обход `data:extend({...})` во всех .lua файлах мода;
-- для каждого прототипа с известным типом сверка ВСЕХ верхнеуровневых полей
-  с allowlist-ом, построенным по официальной документации 2.1.17
-  (таблица `PROTO_FIELDS` в начале функции);
-- deepcopy-блоки (entities.lua, tiles.lua, lightning.lua) проверяются
-  отчётом §1/§4, т.к. статически не видны — доноры верифицированы по ванили.
+**Ступень 1 — доки** (`docs/API-AUDIT.md`, `tools/out/docs_schema_notes.md`):
+для каждого из 26 типов мода открыта страница lua-api 2.1.17 и зафиксированы
+required/OR-required/optional поля, enum'ы, лимиты и условия «Mandatory if».
+Полезное: страницы называются не всегда `<Type>Prototype.html` — есть
+`AutoplaceControl`, `ItemGroup`, `ItemSubGroup`, `RecipeCategory`,
+`NamedNoiseExpression` (`noise-expression`), `NamedNoiseFunction`
+(`noise-function`), `ResourceEntityPrototype` (`resource`);
+мод-настройки (int/bool-setting) в индексе прототипов отсутствуют —
+проверяются по официальной вики Tutorial:Mod_settings.
 
-Прогон: `python3 tools/check_lua.py` → `OK prototype fields checked: 85` →
-`ALL CHECKS PASSED`.
+**Ступень 2 — статика** (`tools/check_lua.py` + `tools/validate_prototypes.py`):
+- `check_prototype_fields()` — AST-обход `data:extend({...})`: allowlist полей
+  по 2.1.17 + REQUIRED_FIELDS (без маркера «optional») + OR_REQUIRED_FIELDS
+  (technology: unit|research_trigger; simple-entity: хотя бы одна графика);
+  deepcopy-блоки проверяются валидатором ниже (в прогоне данных видны все
+  поля итоговых прототипов, включая унаследованные от доноров).
+- `tools/validate_prototypes.py` — схема 2.1.17 против РЕАЛЬНОГО дампа
+  `data.raw` (114 прототипов): required, OR-группы, enum'ы, лимиты
+  (autoplace-control/item-group ≤ 255, tile ≤ 65535), условия
+  (energy_source при efficiency>0; fluid_box.filter при отсутствии
+  max_power_output; time_to_damage ≤ effect_duration; fuel_category при
+  fuel_value; minimum/normal при infinite), типы значений (Energy, Color,
+  Vector, boolean, RealOrientation, uint), все ссылки-имена против полного
+  индекса ванили (263 типа, 4943 имени), неизвестные поля (не в доке и не в
+  доноре → WARN/INFO). Прогон: `python3 tools/validate_prototypes.py` →
+  `RESULT: PASS`. `--self-test` подменяет дамп (убирает limited_to_one_game,
+  ломает ссылки, нарушает enum) и доказывает, что проверка их ловит.
 
-Помимо allowlist-ов, проверка теперь включает **REQUIRED_FIELDS** (обязательные
-поля каждого типа — в доках они без маркера «optional») и **OR_REQUIRED_FIELDS**
-(хотя бы одно из списка: у technology — `unit` или `research_trigger`; у
-simple-entity — хотя бы одна графика). Оба краша 0.2.1/0.2.2 были пропущены
-именно из-за отсутствия этой проверки; теперь они ловятся (break-test пройден).
+**Ступень 3 — функциональный прогон** (`tools/run_data_stage.py`): исполняет
+настоящие `data.lua` + `data-final-fixes.lua` мода (все require, deepcopy
+доноров, `data:extend`) в Lua-рантайме поверх настоящих ванильных данных
+base+space-age+quality+recycler+elevated-rails. Мод грузится чисто: 114
+прототипов 26 типов; лаборатории (biolab, lab) получают
+cataclysmic-science-pack. Прогон: `python3 tools/run_data_stage.py --vanilla
+/tmp/fd --mod . --out tools/out/data_raw_mod.json --defines-lua
+tools/out/defines.lua` → `OK — data stage ran clean`.
 
 ## 7. Что делать при следующем релизе
 
-1. Прогнать `python3 tools/check_lua.py` (8 проверок) и
-   `python3 tools/make_release.py --check`.
+1. Прогнать `python3 tools/run_data_stage.py` (ступень 3), затем
+   `python3 tools/validate_prototypes.py` (ступень 2; 0 ошибок = PASS) и
+   `python3 tools/check_lua.py` (статика), затем
+   `python3 tools/make_release.py --check` (сборка+проверка zip; --check
+   сам прогоняет валидатор).
 2. При добавлении нового прототипа — сверить каждое поле с
    lua-api.factorio.com/latest (страница типа) и ванильным аналогом;
-   новые поля дописать в `PROTO_FIELDS` (или проверка не покроет их).
-3. Deepcopy-сущности: проверить перезаписываемые поля по доку донорского типа.
+   новые поля дописать в `PROTO_FIELDS` (check_lua) и в `DOC_FIELDS`
+   (validate_prototypes), новые ссылки-имена — в `check_refs()`.
+3. Deepcopy-сущности: проверить перезаписываемые поля по доку донорского
+   типа; все ссылки-имена (corpse, dying_explosion, fluid_box.filter,
+   crafting_categories, impact_category, minable.result) проверит валидатор.

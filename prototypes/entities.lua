@@ -28,7 +28,7 @@ data:extend({
     e.fast_replaceable_group = "condensate-extractor"
     e.fluid_box = table.deepcopy(e.fluid_box)
     e.fluid_box.filter = "cataclysm-storm-condensate"
-    e.dying_explosion = "small-explosion"
+    e.dying_explosion = "small-explosion-hit"
     return e
   end)()),
 

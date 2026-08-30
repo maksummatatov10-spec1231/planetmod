@@ -1,6 +1,31 @@
 ---------------------------------------------------------------------------------------------------
 -- Cataclysm (planet mod for Factorio Space Age)
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.3
+Date: 2026-08-30
+  Changes:
+    - Fixed broken dying_explosion reference: condensate-extractor pointed at
+      "small-explosion", a 1.1-era explosion name that does not exist in 2.x
+      (renamed to "small-explosion-hit"). The engine would reject the
+      reference at load / silently lose the death effect; now uses the correct
+      2.x name.
+    - Removed 1.1-era fluid fields pressure_to_speed_ratio and
+      flow_to_energy_ratio from both fluids: they are not in FluidPrototype
+      2.1.17 and appear in no vanilla 2.x fluid (the engine ignores them).
+    - New "docs + static" validator tools/validate_prototypes.py: checks every
+      one of the 114 prototypes against the 2.1.17 schema (required fields,
+      OR-required groups, enums, instance limits, documented "Mandatory if"
+      conditions) and cross-references every name field against the real
+      vanilla 2.x data.raw (ingredients, results, categories, prerequisites,
+      effects, place_result, minable.result, corpse, dying_explosion,
+      damage.type, fluid_box.filter, surface, from/to, lightning_types,
+      autoplace expressions, map_gen_settings ...). Includes a --self-test
+      that proves it catches the historical bug classes (limited_to_one_game,
+      durability, broken references, enum violations).
+    - tools/run_data_stage.py now also dumps the full vanilla name index
+      (names_by_type) used by the validator for cross-referencing.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.2.2
 Date: 2026-08-30
   Changes:
