@@ -136,6 +136,24 @@ local function spawn_lightning(surface, position, force)
   end
 end
 
+-- Positional storm audio. The named sounds (cataclysm-thunder-far/near) are
+-- defined in prototypes/sounds.lua and reference game audio files. All calls
+-- are pcall-guarded: missing audio can never crash the storm logic.
+local function play_sound_near(surface, path, position, min_offset, max_offset, volume)
+  pcall(function()
+    local angle = math.random() * 2 * math.pi
+    local dist = min_offset + math.random() * (max_offset - min_offset)
+    surface.play_sound{
+      path = path,
+      position = {
+        x = position.x + dist * math.cos(angle),
+        y = position.y + dist * math.sin(angle)
+      },
+      volume = volume or 1
+    }
+  end)
+end
+
 local function strike_near(surface, position, force, far_only)
   local radius_min, radius_max
   if far_only then
@@ -170,6 +188,10 @@ local function storm_strike_tick()
       local chance = protected and STRIKE_CHANCE_PROTECTED or STRIKE_CHANCE
       if math.random() < chance then
         strike_near(surface, player.position, force, seismic)
+        -- A strike is usually followed by a distant rumble.
+        if math.random() < 0.5 then
+          play_sound_near(surface, "cataclysm-thunder-far", player.position, 25, 50, 0.6)
+        end
       end
     end
   end
@@ -196,6 +218,24 @@ local function siphon_strikes_tick()
   end
 end
 
+-- During a superstorm distant thunder rumbles around players on the surface.
+local function storm_ambience_tick()
+  if not storm_is_active() then
+    return
+  end
+  local surface = cataclysm_surface()
+  if not surface then
+    return
+  end
+  for _, player in pairs(game.players) do
+    if player.connected and player.character and player.surface == surface then
+      if math.random() < 0.35 then
+        play_sound_near(surface, "cataclysm-thunder-far", player.position, 30, 60, 0.55)
+      end
+    end
+  end
+end
+
 -- Superstorm lifecycle ------------------------------------------------------
 
 local function start_superstorm(surface)
@@ -217,6 +257,12 @@ local function start_superstorm(surface)
     storm.lattice_baseline[force.index] = item_output_total(force, surface, LATTICE_ITEM) or 0
   end
   announce(surface, "cataclysm-message-superstorm-start")
+  -- The storm announces itself: a sharp crack close to everyone on the surface.
+  for _, player in pairs(game.players) do
+    if player.connected and player.character and player.surface == surface then
+      play_sound_near(surface, "cataclysm-thunder-near", player.position, 6, 14, 0.9)
+    end
+  end
 end
 
 local function end_superstorm(surface)
@@ -224,6 +270,12 @@ local function end_superstorm(surface)
   storm.state = "idle"
   storm.timer = 0
   announce(surface, "cataclysm-message-superstorm-end")
+  -- Retreating rumble as the storm rolls away.
+  for _, player in pairs(game.players) do
+    if player.connected and player.character and player.surface == surface then
+      play_sound_near(surface, "cataclysm-thunder-far", player.position, 20, 45, 0.7)
+    end
+  end
   -- Surviving the storm: still alive and on the surface when it ends.
   for player_index in pairs(storm.survivors) do
     local player = game.players[player_index]
@@ -393,6 +445,7 @@ end)
 
 script.on_nth_tick(60, function()
   superstorm_scheduler_tick()
+  storm_ambience_tick()
   spire_check_tick()
   achievement_check_tick()
 end)

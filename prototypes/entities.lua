@@ -74,7 +74,7 @@ data:extend({
   -- Storm generator: burns charged condensate into electricity.
   -- Modeled on the steam turbine.
   clear_surface_conditions((function()
-    local e = table.deepcopy(data.raw["generator"]["turbine"])
+    local e = table.deepcopy(data.raw["generator"]["steam-turbine"])
     e.name = "storm-generator"
     e.icon = "__cataclysm__/graphics/icons/storm-generator.png"
     e.minable = { mining_time = 0.2, result = "storm-generator" }

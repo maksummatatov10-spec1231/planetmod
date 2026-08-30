@@ -33,3 +33,11 @@ Date: 2026-08-30
       (LuaFlowStatistics.output_counts; Factorio 2.x has no recipe-finished event):
       eye-of-the-storm = lattice crafted during a superstorm,
       overcharged = 10 000 charged condensate produced.
+    - Sound stage: named superstorm sounds (distant thunder + lightning cracks
+      via SoundPrototype, referenced from the game's own audio), scripted
+      positional thunder around players during superstorms and storm start/end
+      cues; custom walking/driving sounds for the Cataclysm ground tiles
+      (Space Age rock footsteps). All machines keep the battle-tested working
+      sounds inherited from their vanilla source entities.
+    - Fixed load crash: the storm generator now copies the steam-turbine
+      prototype (data.raw.generator.turbine does not exist in Factorio 2.x).
