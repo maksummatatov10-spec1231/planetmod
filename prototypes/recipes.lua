@@ -45,7 +45,7 @@ data:extend({
       { type = "fluid", name = "cataclysm-storm-condensate", amount = 50 }
     },
     results = {
-      { type = "fluid", name = "cataclysm-charged-condensate", amount = 25, temperature = 200 }
+      { type = "fluid", name = "cataclysm-charged-condensate", amount = 30, temperature = 300 }
     },
     allow_productivity = false
   },
@@ -118,9 +118,9 @@ data:extend({
     enabled = false,
     energy_required = 5,
     ingredients = {
-      { type = "item", name = "stormite-plate", amount = 40 },
-      { type = "item", name = "cataclysm-voltaic-lattice", amount = 2 },
-      { type = "item", name = "copper-cable", amount = 20 }
+      { type = "item", name = "stormite-plate", amount = 50 },
+      { type = "item", name = "cataclysm-voltaic-lattice", amount = 3 },
+      { type = "item", name = "copper-cable", amount = 30 }
     },
     results = { { type = "item", name = "storm-siphon", amount = 1 } }
   },
@@ -131,9 +131,9 @@ data:extend({
     enabled = false,
     energy_required = 5,
     ingredients = {
-      { type = "item", name = "stormite-plate", amount = 80 },
-      { type = "item", name = "pipe", amount = 10 },
-      { type = "item", name = "stone-brick", amount = 30 }
+      { type = "item", name = "stormite-plate", amount = 100 },
+      { type = "item", name = "pipe", amount = 12 },
+      { type = "item", name = "stone-brick", amount = 40 }
     },
     results = { { type = "item", name = "storm-foundry", amount = 1 } }
   },
@@ -144,9 +144,9 @@ data:extend({
     enabled = false,
     energy_required = 8,
     ingredients = {
-      { type = "item", name = "stormite-plate", amount = 120 },
-      { type = "item", name = "cataclysm-voltaic-lattice", amount = 2 },
-      { type = "item", name = "astrite-crystal", amount = 2 }
+      { type = "item", name = "stormite-plate", amount = 150 },
+      { type = "item", name = "cataclysm-voltaic-lattice", amount = 4 },
+      { type = "item", name = "astrite-crystal", amount = 4 }
     },
     results = { { type = "item", name = "storm-fabricator", amount = 1 } }
   },
@@ -157,10 +157,10 @@ data:extend({
     enabled = false,
     energy_required = 10,
     ingredients = {
-      { type = "item", name = "stormite-plate", amount = 200 },
-      { type = "item", name = "cataclysm-voltaic-lattice", amount = 4 },
-      { type = "item", name = "astrite-crystal", amount = 4 },
-      { type = "item", name = "steel-plate", amount = 20 }
+      { type = "item", name = "stormite-plate", amount = 250 },
+      { type = "item", name = "cataclysm-voltaic-lattice", amount = 6 },
+      { type = "item", name = "astrite-crystal", amount = 6 },
+      { type = "item", name = "steel-plate", amount = 30 }
     },
     results = { { type = "item", name = "storm-generator", amount = 1 } }
   }

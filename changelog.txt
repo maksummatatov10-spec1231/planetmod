@@ -22,3 +22,14 @@ Date: 2026-08-30
       (planet moves with Aquilo), borrowed Aquilo music, default import location.
     - Dependency study documented in docs/DEPENDENCIES.md (PlanetsLib, flib, stdlib).
     - Release packaging: tools/make_release.py -> release/cataclysm_0.1.0.zip.
+    - Custom lightning type (deepcopy of the Space Age lightning, purple tint,
+      60 electric damage, 600 MJ strike energy) used by the planet and the superstorm.
+    - Balance pass per docs/DESIGN.md: storm frequency 1/(60*6) per chunk
+      (above Fulgora), machine strike priorities (siphon 10000, storm generator 2000,
+      vent 90, poles/pipes/pumps 10, robots 100, ores 1); superstorm period
+      default lowered to 30 minutes; charged condensate output 30 at 300 C;
+      storm machines buffer 500 MJ; machine recipes re-costed.
+    - Scripted achievements moved to production-statistics polling
+      (LuaFlowStatistics.output_counts; Factorio 2.x has no recipe-finished event):
+      eye-of-the-storm = lattice crafted during a superstorm,
+      overcharged = 10 000 charged condensate produced.

@@ -20,7 +20,7 @@ data:extend({
     name = "cataclysm-charged-condensate",
     icon = "__cataclysm__/graphics/icons/charged-storm-condensate.png",
     icon_size = 64,
-    default_temperature = 200,
+    default_temperature = 300,
     max_temperature = 1000,
     heat_capacity = "0.2kJ",
     base_color = { r = 0.55, g = 0.85, b = 1.0 },

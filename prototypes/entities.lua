@@ -40,7 +40,7 @@ data:extend({
     e.fast_replaceable_group = "storm-siphon"
     if e.energy_source then
       e.energy_source = table.deepcopy(e.energy_source)
-      e.energy_source.buffer_capacity = "200MJ"
+      e.energy_source.buffer_capacity = "500MJ"
     end
     return e
   end)()),

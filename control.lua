@@ -3,24 +3,37 @@
 -- Systems:
 --   * Superstorm scheduler: every `cataclysm-superstorm-period` minutes a
 --     superstorm hits the Cataclysm surface for 3 minutes. During the storm,
---     script-driven lightning strikes around players (the engine's own
---     lightning keeps running underneath).
+--     script-driven lightning strikes around players AND extra strikes on
+--     storm siphons (siphons charge faster — the risk/reward of the storm).
+--     The engine's own lightning keeps running underneath.
 --   * Scripted achievement unlocks that cannot be expressed with prototype
---     conditions (survive-superstorm, eye-of-the-storm, what-was-here,
---     tech-master).
+--     conditions. NOTE: Factorio 2.x has no machine recipe-finished event, so
+--     production-based achievements read the force's production statistics
+--     (LuaFlowStatistics.output_counts) instead — cheap and exact.
 --   * Ancient spire proximity reward (what-was-here).
+--
+-- Fallbacks: every risky call is wrapped in pcall; without the engine lightning
+-- entity the storm falls back to explosions; with superstorms disabled via the
+-- setting only the engine lightning remains. storage is migrated in-place.
 
 local CATACLYSM_SURFACE = "cataclysm"
-local CATACLYSM_ORBIT = "cataclysm-orbit"
+local CATACLYSM_LIGHTNING = "cataclysm-lightning"
 
 local STORM_DURATION_TICKS = 3 * 60 * 60      -- 3 minutes
-local STRIKE_INTERVAL = 20                    -- ticks between strike rolls per player
-local STRIKE_CHANCE = 0.5                     -- base strike chance per roll
-local STRIKE_CHANCE_PROTECTED = 0.25          -- after lightning-protection tech
+local STRIKE_INTERVAL = 25                    -- ticks between strike rolls per player
+local STRIKE_CHANCE = 0.4                     -- base strike chance per roll
+local STRIKE_CHANCE_PROTECTED = 0.2           -- after lightning-protection tech
 local STRIKE_RADIUS = 22                      -- strikes land within this radius of the player
+local SIPHON_STRIKE_INTERVAL = 30             -- ticks between siphon strike rolls
+local SIPHON_STRIKE_LIMIT = 6                 -- max siphons checked per roll
+local SIPHON_STRIKE_CHANCE = 0.5
 local SPIRE_CHECK_INTERVAL = 60
 local SPIRE_RADIUS = 8
 local SPIRE_REWARD = { { name = "astrite-crystal", count = 20 } }
+
+local LATTICE_ITEM = "cataclysm-voltaic-lattice"
+local CHARGED_FLUID = "cataclysm-charged-condensate"
+local CHARGED_ACHIEVEMENT_AMOUNT = 10000
 
 local CATACLYSM_TECHS = {
   "cataclysm-condensate-extraction",
@@ -39,12 +52,26 @@ local CATACLYSM_TECHS = {
 
 local function get_storage()
   if not storage.cataclysm then
-    storage.cataclysm = {
-      storm = { state = "idle", timer = 0, ticks_left = 0, survivors = {} },
-      spire_rewarded = {}
-    }
+    storage.cataclysm = {}
   end
-  return storage.cataclysm
+  local s = storage.cataclysm
+  -- In-place migration: fill defaults for keys added after 0.1.0.
+  if not s.storm then
+    s.storm = { state = "idle", timer = 0, ticks_left = 0, survivors = {} }
+  end
+  if not s.storm.lattice_baseline then
+    s.storm.lattice_baseline = {}
+  end
+  if not s.storm.eye_unlocked then
+    s.storm.eye_unlocked = {}
+  end
+  if not s.spire_rewarded then
+    s.spire_rewarded = {}
+  end
+  if not s.charged_unlocked then
+    s.charged_unlocked = {}
+  end
+  return s
 end
 
 script.on_init(function()
@@ -66,7 +93,7 @@ end
 
 local function storm_period_ticks()
   local setting = settings.global["cataclysm-superstorm-period"]
-  local minutes = 45
+  local minutes = 30
   if setting then
     minutes = setting.value
   end
@@ -88,6 +115,27 @@ local function storm_is_active()
   return get_storage().storm.state == "active"
 end
 
+local function unlock(player, achievement_name)
+  if player and achievement_name then
+    pcall(function()
+      player.unlock_achievement(achievement_name)
+    end)
+  end
+end
+
+local function spawn_lightning(surface, position, force)
+  -- Primary: spawn the real lightning entity (visual + strike damage).
+  -- Fallback: explosion visuals only, so a hiccup can never crash the game.
+  local created = pcall(function()
+    surface.create_entity{ name = CATACLYSM_LIGHTNING, position = position, force = force }
+  end)
+  if not created then
+    pcall(function()
+      surface.create_entity{ name = "explosion", position = position }
+    end)
+  end
+end
+
 local function strike_near(surface, position, force, far_only)
   local radius_min, radius_max
   if far_only then
@@ -101,16 +149,7 @@ local function strike_near(surface, position, force, far_only)
     x = position.x + dist * math.cos(angle),
     y = position.y + dist * math.sin(angle)
   }
-  -- Primary: spawn the real lightning entity (visual + strike damage).
-  -- pcall fallback: explosion visuals only, so a hiccup can never crash the game.
-  local created = pcall(function()
-    surface.create_entity{ name = "lightning", position = pos, force = force }
-  end)
-  if not created then
-    pcall(function()
-      surface.create_entity{ name = "explosion", position = pos }
-    end)
-  end
+  spawn_lightning(surface, pos, force)
 end
 
 local function storm_strike_tick()
@@ -136,6 +175,27 @@ local function storm_strike_tick()
   end
 end
 
+-- During a superstorm siphons get extra strikes: they absorb them as energy,
+-- so the storm rewards a properly grounded base (design: risk/reward loop).
+local function siphon_strikes_tick()
+  if not storm_is_active() then
+    return
+  end
+  local surface = cataclysm_surface()
+  if not surface then
+    return
+  end
+  local siphons = surface.find_entities_filtered{
+    name = "storm-siphon",
+    limit = SIPHON_STRIKE_LIMIT
+  }
+  for _, siphon in pairs(siphons) do
+    if siphon.valid and math.random() < SIPHON_STRIKE_CHANCE then
+      spawn_lightning(surface, siphon.position, siphon.force)
+    end
+  end
+end
+
 -- Superstorm lifecycle ------------------------------------------------------
 
 local function start_superstorm(surface)
@@ -150,6 +210,12 @@ local function start_superstorm(surface)
       storm.survivors[player.index] = true
     end
   end
+  -- eye-of-the-storm baseline: lattices already produced before the storm.
+  storm.eye_unlocked = {}
+  storm.lattice_baseline = {}
+  for _, force in pairs(game.forces) do
+    storm.lattice_baseline[force.index] = item_output_total(force, surface, LATTICE_ITEM) or 0
+  end
   announce(surface, "cataclysm-message-superstorm-start")
 end
 
@@ -162,7 +228,7 @@ local function end_superstorm(surface)
   for player_index in pairs(storm.survivors) do
     local player = game.players[player_index]
     if player and player.connected and player.character and player.surface == surface then
-      player.unlock_achievement("cataclysm-survive-superstorm")
+      unlock(player, "cataclysm-survive-superstorm")
     end
   end
   storm.survivors = {}
@@ -190,23 +256,6 @@ local function superstorm_scheduler_tick()
   end
 end
 
--- Eye of the storm: ride the orbit above Cataclysm during a superstorm. -----
-
-local function eye_of_the_storm_tick()
-  if not storm_is_active() then
-    return
-  end
-  local orbit = game.surfaces[CATACLYSM_ORBIT]
-  if not orbit then
-    return
-  end
-  for _, player in pairs(game.players) do
-    if player.connected and player.surface == orbit then
-      player.unlock_achievement("cataclysm-eye-of-the-storm")
-    end
-  end
-end
-
 -- What was here? -------------------------------------------------------------
 -- Finding an ancient spire unlocks the achievement and a small reward.
 
@@ -215,9 +264,9 @@ local function spire_check_tick()
   if not surface then
     return
   end
+  local storage_table = get_storage()
   for _, player in pairs(game.players) do
     if player.connected and player.character and player.surface == surface then
-      local storage_table = get_storage()
       if not storage_table.spire_rewarded[player.index] then
         local spires = surface.find_entities_filtered{
           position = player.position,
@@ -226,7 +275,7 @@ local function spire_check_tick()
         }
         if spires and #spires > 0 then
           storage_table.spire_rewarded[player.index] = true
-          player.unlock_achievement("cataclysm-what-was-here")
+          unlock(player, "cataclysm-what-was-here")
           pcall(function()
             local chest = surface.create_entity{
               name = "wooden-chest",
@@ -235,6 +284,73 @@ local function spire_check_tick()
             }
             chest.get_inventory(defines.inventory.chest).insert(SPIRE_REWARD)
           end)
+        end
+      end
+    end
+  end
+end
+
+-- Production-statistics achievements -----------------------------------------
+-- Factorio 2.x has no machine recipe-finished event, so we read the force's
+-- production statistics (LuaFlowStatistics.output_counts), which include
+-- productivity bonuses and are exact.
+--   * eye-of-the-storm: a voltaic lattice is crafted during a superstorm.
+--   * charged-10k: 10 000 charged condensate produced (fluid production cannot
+--     be a prototype produce-achievement).
+
+local function item_output_total(force, surface, item_name)
+  local ok, total = pcall(function()
+    local stats = force.get_item_production_statistics(surface)
+    return stats.output_counts[item_name] or 0
+  end)
+  if ok then
+    return total
+  end
+  return nil
+end
+
+local function fluid_output_total(force, surface, fluid_name)
+  local ok, total = pcall(function()
+    local stats = force.get_fluid_production_statistics(surface)
+    return stats.output_counts[fluid_name] or 0
+  end)
+  if ok then
+    return total
+  end
+  return nil
+end
+
+local function achievement_check_tick()
+  local surface = cataclysm_surface()
+  if not surface then
+    return
+  end
+  local storage_table = get_storage()
+  local storm = storage_table.storm
+  local storm_active = storm.state == "active"
+
+  for _, force in pairs(game.forces) do
+    -- Eye of the storm: lattice crafted while the storm is active.
+    if storm_active and not storm.eye_unlocked[force.index] then
+      local total = item_output_total(force, surface, LATTICE_ITEM)
+      if total and total > (storm.lattice_baseline[force.index] or 0) then
+        storm.eye_unlocked[force.index] = true
+        for _, player in pairs(game.players) do
+          if player.connected and player.force == force then
+            unlock(player, "cataclysm-eye-of-the-storm")
+          end
+        end
+      end
+    end
+    -- Charged condensate: 10 000 units produced.
+    if not storage_table.charged_unlocked[force.index] then
+      local total = fluid_output_total(force, surface, CHARGED_FLUID)
+      if total and total >= CHARGED_ACHIEVEMENT_AMOUNT then
+        storage_table.charged_unlocked[force.index] = true
+        for _, player in pairs(game.players) do
+          if player.connected and player.force == force then
+            unlock(player, "cataclysm-charged-10k")
+          end
         end
       end
     end
@@ -264,7 +380,7 @@ script.on_event(defines.events.on_research_finished, function(event)
       if all_cataclysm_techs_researched(research.force) then
         for _, player in pairs(game.players) do
           if player.connected and player.force == research.force then
-            player.unlock_achievement("cataclysm-tech-master")
+            unlock(player, "cataclysm-tech-master")
           end
         end
       end
@@ -277,10 +393,14 @@ end)
 
 script.on_nth_tick(60, function()
   superstorm_scheduler_tick()
-  eye_of_the_storm_tick()
   spire_check_tick()
+  achievement_check_tick()
 end)
 
 script.on_nth_tick(STRIKE_INTERVAL, function()
   storm_strike_tick()
+end)
+
+script.on_nth_tick(SIPHON_STRIKE_INTERVAL, function()
+  siphon_strikes_tick()
 end)

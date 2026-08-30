@@ -36,18 +36,22 @@ data:extend({
       gravity = 12
     },
     lightning_properties = {
-      lightnings_per_chunk_per_tick = 1 / (60 * 10), -- same as Fulgora; superstorms add the extra danger
+      -- Higher than Fulgora's 1/(60*10): ~1 strike per chunk every 6 seconds.
+      -- Per-strike damage/energy are lower (see cataclysm-lightning).
+      lightnings_per_chunk_per_tick = 1 / (60 * 6),
       search_radius = 12.0,
-      lightning_types = { "lightning" },
+      lightning_types = { "cataclysm-lightning" },
       lightning_multiplier_at_day = 0.25,
       lightning_multiplier_at_night = 1.0,
       priority_rules = {
         { type = "id", string = "storm-siphon", priority_bonus = 10000 },
+        { type = "id", string = "storm-generator", priority_bonus = 2000 },
+        { type = "id", string = "cataclysm-vent", priority_bonus = 90 },
         { type = "prototype", string = "electric-pole", priority_bonus = 10 },
         { type = "prototype", string = "power-switch", priority_bonus = 10 },
-        { type = "prototype", string = "pipe", priority_bonus = 1 },
-        { type = "prototype", string = "pump", priority_bonus = 1 },
-        { type = "prototype", string = "offshore-pump", priority_bonus = 1 },
+        { type = "prototype", string = "pipe", priority_bonus = 10 },
+        { type = "prototype", string = "pump", priority_bonus = 10 },
+        { type = "prototype", string = "offshore-pump", priority_bonus = 10 },
         { type = "prototype", string = "logistic-robot", priority_bonus = 100 },
         { type = "prototype", string = "construction-robot", priority_bonus = 100 },
         { type = "impact-soundset", string = "metal", priority_bonus = 1 }

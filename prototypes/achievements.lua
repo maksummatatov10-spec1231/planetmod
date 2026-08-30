@@ -45,11 +45,14 @@ data:extend({
     icon_size = 128
   },
   {
+    -- Scripted: fluid production cannot be a produce-achievement, so this is
+    -- an unreachable produce threshold that control.lua unlocks at 10 000
+    -- charged condensate produced.
     type = "produce-achievement",
     name = "cataclysm-charged-10k",
     order = "a[progress]-h[cataclysm]-b[charged-10k]",
     item_product = "cataclysm-voltaic-lattice",
-    amount = 1,
+    amount = 1000000000,
     icon = "__cataclysm__/graphics/achievement/charged-condensate-10k.png",
     icon_size = 128
   },
