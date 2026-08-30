@@ -534,10 +534,15 @@ def run(audit, data, defines_protos):
     # ---- labs / vanilla-changes --------------------------------------------
     lab_inputs = {l["name"]: l.get("inputs") for l in data.get("labs", [])}
     for lname, inputs in lab_inputs.items():
-        if inputs and "cataclysmic-science-pack" not in inputs and \
-                any("science-pack" in i for i in inputs):
-            audit.warn(f"vanilla-changes: lab '{lname}' does not accept "
-                       "cataclysmic-science-pack")
+        if not inputs:
+            continue
+        for pack in ("cataclysmic-science-pack", "cataclysm-survey-pack"):
+            if pack not in inputs and any("science-pack" in i for i in inputs):
+                audit.warn(f"vanilla-changes: lab '{lname}' does not accept "
+                           f"{pack}")
+
+    # ---- planets must be reachable -------------------------------------------
+    check_planet_unlocks(audit, protos, names)
 
 
 def check_conditionals(audit, tag, ptype, proto):
@@ -727,6 +732,8 @@ def check_refs(audit, tag, ptype, proto, names, entity_names, exists, in_type):
         if isinstance(trig, dict):
             ref(trig.get("item"), "research_trigger.item")
             ref(trig.get("fluid"), "research_trigger.fluid", ns="fluid")
+            for en in trig.get("entities") or []:
+                ref(en, "research_trigger.entities[]")
         for e in proto.get("effects") or []:
             if not isinstance(e, dict):
                 continue
@@ -743,6 +750,13 @@ def check_refs(audit, tag, ptype, proto, names, entity_names, exists, in_type):
                 if not is_number(e.get("modifier")):
                     audit.err(f"{tag}: character-crafting-speed effect needs "
                               "numeric modifier")
+            elif et == "unlock-space-location":
+                loc = e.get("space_location")
+                if isinstance(loc, str) and \
+                        loc not in names.get("space-location", set()) and \
+                        loc not in names.get("planet", set()):
+                    audit.err(f"{tag}: effects.space_location = {loc!r} is "
+                              "not a known planet / space location")
     if ptype in ("produce-achievement", "produce-per-hour-achievement"):
         ref(proto.get("item_product"), "item_product")
         ref(proto.get("fluid_product"), "fluid_product", ns="fluid")
@@ -824,6 +838,34 @@ def check_refs(audit, tag, ptype, proto, names, entity_names, exists, in_type):
             "item", "item-group", "fluid", "technology", "planet",
             "space-connection", "sound", "lightning"):
         ref(sg, "subgroup", ns="item-subgroup", soft=True)
+
+
+def check_planet_unlocks(audit, protos, names):
+    """Every planet defined by the mod must be unlocked by some technology
+    with effect type `unlock-space-location`. Without it the planet exists in
+    data.raw but never becomes reachable in space travel (regression that
+    kept Cataclysm permanently closed on the starmap)."""
+    mod_planets = sorted({r["name"] for r in protos
+                          if r["type"] == "planet"})
+    if not mod_planets:
+        return
+    unlocked = set()
+    for r in protos:
+        if r["type"] != "technology":
+            continue
+        for e in r["proto"].get("effects") or []:
+            if isinstance(e, dict) and \
+                    e.get("type") == "unlock-space-location":
+                loc = e.get("space_location")
+                if isinstance(loc, str):
+                    unlocked.add(loc)
+    for p in mod_planets:
+        if p not in unlocked:
+            audit.err(
+                f"planet/{p}: no technology has an unlock-space-location "
+                "effect for this planet — it will never be reachable in "
+                "space travel (add a discovery technology with effect "
+                "type 'unlock-space-location' and space_location = name)")
 
 
 def check_recipe_categories(audit, protos, names):
@@ -958,6 +1000,9 @@ def self_test(data, defines_protos):
       3. entity referencing a dying_explosion that does not exist in 2.x
       4. recipe ingredient referencing a non-existent item
       5. autoplace-control.category outside the enum
+      6. unlock-space-location effect pointing at an unknown location
+      7. mine-entity research trigger referencing a non-existent entity
+      8. planet with no unlock-space-location effect anywhere (unreachable)
     """
     import copy
     mutated = copy.deepcopy(data)
@@ -982,22 +1027,50 @@ def self_test(data, defines_protos):
     # 5. enum violation
     ac = find("autoplace-control", "stormite_ore")
     ac["category"] = "bogus-category"
+    # 6. unlock-space-location pointing at an unknown space location
+    pd = find("technology", "cataclysm-planet-discovery")
+    for e in pd["effects"]:
+        if e.get("type") == "unlock-space-location":
+            e["space_location"] = "no-such-location"
+    # 7. mine-entity trigger referencing a non-existent entity
+    sp = find("technology", "cataclysm-stormite-processing")
+    sp["research_trigger"] = {"type": "mine-entity",
+                              "entities": ["no-such-entity"]}
 
     audit = Audit()
     run(audit, mutated, defines_protos)
 
+    # 8. drop the unlock effect entirely -> planet becomes unreachable
+    #    (run as a second audit so case 6 is still exercised)
+    mutated2 = copy.deepcopy(mutated)
+    for r in mutated2["mod_protos"]:
+        if r["type"] == "technology":
+            r["proto"]["effects"] = [
+                e for e in r["proto"].get("effects") or []
+                if not (isinstance(e, dict) and
+                        e.get("type") == "unlock-space-location")
+            ]
+    audit2 = Audit()
+    run(audit2, mutated2, defines_protos)
+
     expected = [
         "produce-achievement", "limited_to_one_game",
         "small-explosion", "no-such-item", "bogus-category",
+        "no-such-location", "no-such-entity",
     ]
     joined = "\n".join(audit.errors).lower()
     missing = [e for e in expected if e.lower() not in joined]
+    if not missing:
+        if "never be reachable" not in \
+                "\n".join(audit2.errors).lower():
+            missing.append("never be reachable")
     if missing:
         print("\n[self-test] FAIL — validator did not catch: " +
               ", ".join(missing))
         return False
     print("\n[self-test] PASS — all historical bug classes detected "
-          "(limited_to_one_game, broken references, enum violation)")
+          "(limited_to_one_game, broken references, enum violation, "
+          "unreachable planet, bad triggers)")
     return True
 
 

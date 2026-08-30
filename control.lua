@@ -36,6 +36,7 @@ local CHARGED_FLUID = "cataclysm-charged-condensate"
 local CHARGED_ACHIEVEMENT_AMOUNT = 10000
 
 local CATACLYSM_TECHS = {
+  "cataclysm-planet-discovery",
   "cataclysm-condensate-extraction",
   "cataclysm-stormite-processing",
   "cataclysm-storm-siphon",

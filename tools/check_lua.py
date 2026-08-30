@@ -103,14 +103,19 @@ def check_locale_parity():
 def check_recipe_unlock_coverage():
     recipes_path = os.path.join(ROOT, "prototypes", "recipes.lua")
     techs_path = os.path.join(ROOT, "prototypes", "technologies.lua")
+    changes_path = os.path.join(ROOT, "prototypes", "vanilla-changes.lua")
     with open(recipes_path, "r", encoding="utf-8") as fh:
         recipes_src = fh.read()
     with open(techs_path, "r", encoding="utf-8") as fh:
         techs_src = fh.read()
+    with open(changes_path, "r", encoding="utf-8") as fh:
+        changes_src = fh.read()
 
     recipe_names = set(re.findall(r"type\s*=\s*\"recipe\",\s*\n\s*name\s*=\s*\"([A-Za-z0-9_\-]+)\"", recipes_src))
     unlocked = set(re.findall(r"unlock\(\s*\"([A-Za-z0-9_\-]+)\"\s*\)", techs_src))
     unlocked |= set(re.findall(r"type\s*=\s*\"unlock-recipe\",\s*\n?\s*recipe\s*=\s*\"([A-Za-z0-9_\-]+)\"", techs_src))
+    # recipes granted by data-final-fixes vanilla technology patches
+    unlocked |= set(re.findall(r"type\s*=\s*\"unlock-recipe\",\s*\n?\s*recipe\s*=\s*\"([A-Za-z0-9_\-]+)\"", changes_src))
     for name in sorted(recipe_names):
         if name not in unlocked:
             fail("recipe not unlocked by any technology: %s" % name)

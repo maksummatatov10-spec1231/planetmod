@@ -1,7 +1,7 @@
 # Cataclysm — prototype audit report (docs 2.1.17 + static)
 
-- Generated: 2026-08-30T06:02:26
-- Instances checked: 114 across 26 types
+- Generated: 2026-08-30T06:37:11
+- Instances checked: 117 across 26 types
 - Errors: **0**  Warnings: 1  Info: 0
 - Result: **PASS**
 
@@ -27,7 +27,7 @@
 | change-surface-achievement | 1 |
 | fluid | 2 |
 | generator | 1 |
-| item | 11 |
+| item | 12 |
 | item-group | 1 |
 | item-subgroup | 4 |
 | lightning | 1 |
@@ -38,12 +38,12 @@
 | planet | 1 |
 | produce-achievement | 7 |
 | produce-per-hour-achievement | 1 |
-| recipe | 11 |
+| recipe | 12 |
 | recipe-category | 3 |
 | research-with-science-pack-achievement | 1 |
 | resource | 2 |
 | simple-entity | 4 |
 | sound | 2 |
 | space-connection | 1 |
-| technology | 12 |
+| technology | 13 |
 | tile | 4 |

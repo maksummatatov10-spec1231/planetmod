@@ -97,6 +97,25 @@ data:extend({
     },
     allow_productivity = true
   },
+  -- Survey pack: crafted before the flight to Cataclysm (Aquilo tier
+  -- ingredients: lithium, advanced circuits, batteries). Unlocked by the
+  -- vanilla space-platform-thruster technology via vanilla-changes.lua.
+  {
+    type = "recipe",
+    name = "cataclysm-survey-pack",
+    categories = { "crafting" },
+    enabled = false,
+    energy_required = 10,
+    ingredients = {
+      { type = "item", name = "lithium-plate", amount = 2 },
+      { type = "item", name = "processing-unit", amount = 1 },
+      { type = "item", name = "battery", amount = 1 }
+    },
+    results = {
+      { type = "item", name = "cataclysm-survey-pack", amount = 1 }
+    },
+    allow_productivity = true
+  },
 
   -- Machines ---------------------------------------------------------------
   {

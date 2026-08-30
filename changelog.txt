@@ -1,6 +1,31 @@
 ---------------------------------------------------------------------------------------------------
 -- Cataclysm (planet mod for Factorio Space Age)
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.0
+Date: 2026-08-30
+  Changes:
+    - NEW: the planet is now reachable. Added technology cataclysm-planet-discovery
+      (prerequisite: space-platform-thruster) with the vanilla unlock-space-location
+      effect — the planet previously stayed permanently closed on the starmap even
+      with the whole tree researched.
+    - NEW: cataclysm-survey-pack, a new non-cryogenic science pack paid to the
+      discovery technology. Crafted before the flight on Aquilo / the space
+      platform (2 lithium plates + 1 processing unit + 1 battery); its recipe is
+      unlocked additively by space-platform-thruster in data-final-fixes.
+    - NEW: the early production chain is now learned by doing — research
+      triggers instead of science packs: stormite processing (mine stormite
+      ore), storm siphon (craft storm foundry), astrite refining (craft
+      stormite plates), voltaic lattice (craft astrite crystals), cataclysmic
+      science pack (craft voltaic lattices).
+    - Removed cryogenic-science-pack from the whole technology tree: discovery
+      and arrival techs cost the survey pack + space science, deeper techs cost
+      the cataclysmic pack + space science (platform shield also promethium).
+    - Lab inputs (data-final-fixes) now accept both cataclysm science packs.
+    - Validator: new cross-checks for research triggers (mine-entity / craft-item
+      / build-entity entities) and unlock-space-location effects, plus a
+      regression check that every mod planet has a discovery technology
+      (tools/validate_prototypes.py, self-test extended).
+
 Version: 0.2.3
 Date: 2026-08-30
   Changes:

@@ -1,7 +1,14 @@
 -- Cataclysm — technologies.
 --
--- The tree starts from cryogenic science (post-Aquilo gate) and then requires
--- the cataclysmic science pack produced on the planet itself.
+-- Progression:
+--   1. cataclysm-planet-discovery opens the route to the planet; it is paid
+--      in the new cataclysm-survey-pack (crafted before the flight, on
+--      Aquilo / the space platform — NOT cryogenic science).
+--   2. On the planet the first production steps are learned by doing:
+--      mining and crafting trigger the research (stormite processing,
+--      storm siphons, astrite refining, voltaic lattice).
+--   3. Deeper technologies are paid in the cataclysmic science pack
+--      produced on the planet itself.
 
 local function tech(name, icon, order, prerequisites, unit, effects)
   return {
@@ -16,6 +23,19 @@ local function tech(name, icon, order, prerequisites, unit, effects)
   }
 end
 
+local function trigger_tech(name, icon, order, prerequisites, trigger, effects)
+  return {
+    type = "technology",
+    name = name,
+    icon = "__cataclysm__/graphics/technology/" .. icon .. ".png",
+    icon_size = 128,
+    order = order,
+    prerequisites = prerequisites,
+    research_trigger = trigger,
+    effects = effects
+  }
+end
+
 local function pack_unit(count, time, packs)
   local ingredients = {}
   for _, p in ipairs(packs) do
@@ -24,81 +44,105 @@ local function pack_unit(count, time, packs)
   return { count = count, ingredients = ingredients, time = time }
 end
 
+-- research triggers for the "learn by doing" tier
+local function mine_entity(entity)
+  return { type = "mine-entity", entities = { entity } }
+end
+
+local function craft_item(item)
+  return { type = "craft-item", item = item, amount = 1 }
+end
+
 -- recipes unlocked by more than one tech are referenced here for brevity
 local unlock = function(recipe)
   return { type = "unlock-recipe", recipe = recipe }
 end
 
 data:extend({
-  -- Tier 0: arrival ---------------------------------------------------------
+  -- Tier 0: discovery of the planet ------------------------------------------
+  {
+    type = "technology",
+    name = "cataclysm-planet-discovery",
+    icon = "__cataclysm__/graphics/icons/cataclysm.png",
+    icon_size = 128,
+    order = "f[cataclysm]-a",
+    essential = true,
+    prerequisites = { "space-platform-thruster" },
+    unit = pack_unit(150, 30, { "cataclysm-survey-pack", "space-science-pack" }),
+    effects = {
+      {
+        type = "unlock-space-location",
+        space_location = "cataclysm",
+        use_icon_overlay_constant = true
+      },
+      {
+        type = "unlock-travel-to-space-platforms",
+        modifier = true
+      }
+    }
+  },
+  -- Tier 1: arrival -----------------------------------------------------------
   tech(
     "cataclysm-condensate-extraction",
     "condensate-extraction",
-    "f[cataclysm]-a",
-    { "cryogenic-science-pack", "space-platform" },
-    pack_unit(100, 30, { "cryogenic-science-pack" }),
+    "f[cataclysm]-b",
+    { "cataclysm-planet-discovery" },
+    pack_unit(100, 30, { "cataclysm-survey-pack", "space-science-pack" }),
     { unlock("condensate-extractor") }
   ),
-  -- Tier 1: basic production -------------------------------------------------
-  tech(
+  -- Tier 2: learn by doing (mining / crafting triggers) ------------------------
+  trigger_tech(
     "cataclysm-stormite-processing",
     "stormite-processing",
-    "f[cataclysm]-b",
-    { "cataclysm-condensate-extraction" },
-    pack_unit(150, 30, { "cryogenic-science-pack", "cataclysmic-science-pack" }),
-    { unlock("cataclysm-stormite-plate"), unlock("storm-foundry") }
-  ),
-  tech(
-    "cataclysm-storm-siphon",
-    "storm-siphon",
     "f[cataclysm]-c",
     { "cataclysm-condensate-extraction" },
-    pack_unit(150, 30, { "cryogenic-science-pack", "cataclysmic-science-pack" }),
+    mine_entity("stormite-ore"),
+    { unlock("cataclysm-stormite-plate"), unlock("storm-foundry") }
+  ),
+  trigger_tech(
+    "cataclysm-storm-siphon",
+    "storm-siphon",
+    "f[cataclysm]-d",
+    { "cataclysm-stormite-processing" },
+    craft_item("storm-foundry"),
     {
       unlock("storm-siphon"),
       unlock("cataclysm-charge-condensate"),
       unlock("cataclysm-discharge-condensate")
     }
   ),
-  -- Tier 2: advanced materials ------------------------------------------------
-  tech(
+  trigger_tech(
     "cataclysm-astrite-refining",
     "astrite-refining",
-    "f[cataclysm]-d",
+    "f[cataclysm]-e",
     { "cataclysm-stormite-processing" },
-    pack_unit(200, 30, { "cryogenic-science-pack", "cataclysmic-science-pack" }),
+    craft_item("stormite-plate"),
     { unlock("cataclysm-astrite-crystal") }
   ),
-  tech(
+  trigger_tech(
     "cataclysm-voltaic-lattice",
     "voltaic-lattice",
-    "f[cataclysm]-e",
-    { "cataclysm-storm-siphon", "cataclysm-astrite-refining" },
-    pack_unit(250, 30, { "cryogenic-science-pack", "cataclysmic-science-pack" }),
+    "f[cataclysm]-f",
+    { "cataclysm-astrite-refining", "cataclysm-storm-siphon" },
+    craft_item("astrite-crystal"),
     { unlock("cataclysm-voltaic-lattice"), unlock("storm-fabricator") }
   ),
-  -- Science pack ---------------------------------------------------------------
-  {
-    type = "technology",
-    name = "cataclysmic-science-pack",
-    icon = "__cataclysm__/graphics/technology/cataclysmic-science-pack.png",
-    icon_size = 128,
-    order = "f[cataclysm]-f",
-    prerequisites = { "cataclysm-voltaic-lattice" },
-    research_trigger = {
-      type = "craft-item",
-      item = "cataclysm-voltaic-lattice",
-      amount = 1
-    },
-    effects = { unlock("cataclysmic-science-pack") }
-  },
-  -- Tier 3: energy & defence ---------------------------------------------------
+  -- Science pack ----------------------------------------------------------------
+  trigger_tech(
+    "cataclysmic-science-pack",
+    "cataclysmic-science-pack",
+    "f[cataclysm]-g",
+    { "cataclysm-voltaic-lattice" },
+    craft_item("cataclysm-voltaic-lattice"),
+    { unlock("cataclysmic-science-pack") }
+  ),
+  -- Tier 3: energy & defence -----------------------------------------------------
   tech(
     "cataclysm-storm-generator",
     "storm-generator",
-    "f[cataclysm]-g",
-    { "cataclysm-voltaic-lattice" },
-    pack_unit(300, 45, { "cryogenic-science-pack", "cataclysmic-science-pack" }),
+    "f[cataclysm]-h",
+    { "cataclysm-voltaic-lattice", "cataclysm-storm-siphon", "cataclysmic-science-pack" },
+    pack_unit(300, 45, { "cataclysmic-science-pack", "space-science-pack" }),
     { unlock("storm-generator") }
   ),
   -- Real effect (halved superstorm strike chance) is scripted in control.lua;
@@ -106,9 +150,9 @@ data:extend({
   tech(
     "cataclysm-lightning-protection",
     "lightning-protection",
-    "f[cataclysm]-h",
-    { "cataclysm-storm-siphon" },
-    pack_unit(250, 45, { "cryogenic-science-pack", "cataclysmic-science-pack" }),
+    "f[cataclysm]-i",
+    { "cataclysm-storm-siphon", "cataclysmic-science-pack" },
+    pack_unit(250, 45, { "cataclysmic-science-pack", "space-science-pack" }),
     {
       {
         type = "character-crafting-speed",
@@ -119,26 +163,26 @@ data:extend({
   tech(
     "cataclysm-seismic-stabilization",
     "seismic-stabilization",
-    "f[cataclysm]-i",
+    "f[cataclysm]-j",
     { "cataclysm-lightning-protection" },
-    pack_unit(400, 60, { "cryogenic-science-pack", "cataclysmic-science-pack" }),
+    pack_unit(400, 60, { "cataclysmic-science-pack", "space-science-pack" }),
     {}
   ),
-  -- Tier 4: endgame --------------------------------------------------------------
+  -- Tier 4: endgame ----------------------------------------------------------------
   tech(
     "cataclysm-storm-platform-shield",
     "storm-platform-shield",
-    "f[cataclysm]-j",
-    { "cataclysm-voltaic-lattice" },
-    pack_unit(500, 60, { "cryogenic-science-pack", "cataclysmic-science-pack", "promethium-science-pack" }),
+    "f[cataclysm]-k",
+    { "cataclysm-voltaic-lattice", "cataclysmic-science-pack" },
+    pack_unit(500, 60, { "cataclysmic-science-pack", "space-science-pack", "promethium-science-pack" }),
     {}
   ),
   tech(
     "cataclysm-productivity",
     "cataclysm-productivity",
-    "f[cataclysm]-k",
-    { "cataclysm-voltaic-lattice" },
-    pack_unit(350, 45, { "cryogenic-science-pack", "cataclysmic-science-pack" }),
+    "f[cataclysm]-l",
+    { "cataclysm-voltaic-lattice", "cataclysmic-science-pack" },
+    pack_unit(350, 45, { "cataclysmic-science-pack", "space-science-pack" }),
     {
       { type = "change-recipe-productivity", recipe = "cataclysm-stormite-plate", change = 0.1 },
       { type = "change-recipe-productivity", recipe = "cataclysm-voltaic-lattice", change = 0.1 },
@@ -148,9 +192,9 @@ data:extend({
   tech(
     "cataclysm-storm-logistics",
     "storm-logistics",
-    "f[cataclysm]-l",
+    "f[cataclysm]-m",
     { "cataclysm-storm-generator" },
-    pack_unit(250, 30, { "cryogenic-science-pack", "cataclysmic-science-pack" }),
+    pack_unit(250, 30, { "cataclysmic-science-pack", "space-science-pack" }),
     {}
   )
 })

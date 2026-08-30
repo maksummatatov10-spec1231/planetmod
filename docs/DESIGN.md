@@ -24,7 +24,9 @@
 1. **География:** единственное соединение — `aquilo → cataclysm` (мягкий гейт: до Aquilo не долететь).
 2. **Дальность:** `length` ≈ 60 000 км с плотным астероидным полем — нужен продвинутый платформенный
    корабль (криогенное/эндгейм-топливо, защита).
-3. **Наука:** все технологии Катаклизма требуют `cryogenic-science-pack` (жёсткий гейт прогрессии).
+3. **Наука:** открытие планеты оплачивается новым `cataclysm-survey-pack`
+   (крафт до полёта на Aquilo/платформе, рецепт открывает ванильная технология
+   `space-platform-thruster`); криогенный пак в дереве Катаклизма не используется.
 
 **Почему ради неё летят (выгода):**
 - **Катаклизмический science pack** — единственный источник продвинутых технологий планеты;
@@ -188,28 +190,40 @@
 **Рецепт (штормовой фабрикатор, ~30 сек, allow_productivity):**
 `1 вольтаическая решётка + 50 заряженного конденсата + 1 астритовый кристалл → 1 пакет`
 (+ побочный возврат разряженного конденсата — петля).
-**Роль:** технологии Катаклизма (и только они) требуют этот пакет + cryogenic (гейт после Aquilo).
+**Роль:** глубокие технологии Катаклизма требуют этот пакет (+ `space-science-pack`;
+криогенный пак в дереве не используется — его место занял новый `cataclysm-survey-pack`).
 **Почему так:** пакет материализует всю петлю (руда + жидкость + катализатор + заряд) —
 наука буквально «сделана из шторма».
 
+### Разведывательный набор (ворота на планету)
+
+**Название:** Катаклизмический разведывательный набор
+**Internal:** `cataclysm-survey-pack` · `type = "item"` (как все science pack'и 2.x).
+**Рецепт (обычный сборщик, ~10 сек):** `2 литиевые пластины + 1 процессорный блок + 1 батарея → 1 набор`.
+**Открытие рецепта:** ванильная технология `space-platform-thruster`
+(аддитивно, в `data-final-fixes`). Платится за технологию **«Открытие Катаклизма»**
+(`cataclysm-planet-discovery`) и первую технологию на планете. Крафт — до полёта,
+на Aquilo или платформе.
+
 ---
 
-## H. ТЕХНОЛОГИИ (V1, ~12; префикс `cataclysm-`)
+## H. ТЕХНОЛОГИИ (V2, 13; префикс `cataclysm-`)
 
 | Технология | Prereq | Наука | Эффект |
 |---|---|---|---|
-| cataclysm-condensate-extraction | cryogenic-science-pack, space-platform | крио | экстрактор конденсата |
-| cataclysm-stormite-processing | cataclysm-condensate-extraction | крио+катакл. | кузня, плиты |
-| cataclysm-storm-siphon | cataclysm-condensate-extraction | крио+катакл. | сифон, заряженный конденсат |
-| cataclysm-astrite-refining | cataclysm-stormite-processing | +катакл. | кристаллизация астрита |
-| cataclysm-voltaic-lattice | cataclysm-storm-siphon, cataclysm-astrite-refining | +катакл. | решётка, фабрикатор |
-| cataclysmic-science-pack | cataclysm-voltaic-lattice | +катакл. | рецепт науки (research_trigger: первая решётка) |
-| cataclysm-storm-generator | cataclysm-voltaic-lattice | +катакл. | генератор (энергия) |
-| cataclysm-lightning-protection | cataclysm-storm-siphon | +катакл. | молниезащита: снижение урона молний (эффект на постройки/броню) |
-| cataclysm-seismic-stabilization | cataclysm-lightning-protection | +катакл. | суперштормы реже/слабее (скрипт) |
-| cataclysm-storm-platform-shield | cataclysm-voltaic-lattice, promethium-science-pack (опц.) | +катакл.+промет. | щит платформы: скорость/защита на дальних маршрутах |
-| cataclysm-productivity | cataclysm-voltaic-lattice | +катакл. | продуктивность для плит/решётки/науки |
-| cataclysm-storm-logistics | cataclysm-storm-generator | +катакл. | логистика: зарядка роботов/поездов от сети сифонов (QoL) |
+| cataclysm-planet-discovery | space-platform-thruster | survey+space | unlock-space-location `cataclysm` (планета открывается на карте) |
+| cataclysm-condensate-extraction | cataclysm-planet-discovery | survey+space | экстрактор конденсата |
+| cataclysm-stormite-processing | cataclysm-condensate-extraction | **триггер: добыл stormite-ore** | кузня, плиты |
+| cataclysm-storm-siphon | cataclysm-stormite-processing | **триггер: создал storm-foundry** | сифон, заряженный конденсат |
+| cataclysm-astrite-refining | cataclysm-stormite-processing | **триггер: создал stormite-plate** | кристаллизация астрита |
+| cataclysm-voltaic-lattice | cataclysm-astrite-refining, cataclysm-storm-siphon | **триггер: создал astrite-crystal** | решётка, фабрикатор |
+| cataclysmic-science-pack | cataclysm-voltaic-lattice | **триггер: создал voltaic-lattice** | рецепт науки |
+| cataclysm-storm-generator | cataclysm-voltaic-lattice, cataclysm-storm-siphon, cataclysmic-science-pack | катакл.+space | генератор (энергия) |
+| cataclysm-lightning-protection | cataclysm-storm-siphon, cataclysmic-science-pack | катакл.+space | молниезащита: снижение урона молний (скрипт) |
+| cataclysm-seismic-stabilization | cataclysm-lightning-protection | катакл.+space | суперштормы бьют далеко от игрока (скрипт) |
+| cataclysm-storm-platform-shield | cataclysm-voltaic-lattice, cataclysmic-science-pack | катакл.+space+промет. | щит платформы: скорость/защита на дальних маршрутах |
+| cataclysm-productivity | cataclysm-voltaic-lattice, cataclysmic-science-pack | катакл.+space | продуктивность для плит/решётки/науки |
+| cataclysm-storm-logistics | cataclysm-storm-generator | катакл.+space | логистика: зарядка роботов/поездов от сети сифонов (QoL) |
 
 Порядок: добыча → переработка → заряд → наука → энергия → защита → эндгейм. Каждая технология
 имеет локализованное описание (лор + игровой смысл).

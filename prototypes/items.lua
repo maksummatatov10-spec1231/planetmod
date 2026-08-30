@@ -75,6 +75,20 @@ data:extend({
     stack_size = science.stack_size,
     weight = science.weight
   },
+  {
+    -- Paid to the technology that opens the route to Cataclysm. Crafted
+    -- before the flight (Aquilo / space platform); the recipe is unlocked by
+    -- the vanilla space-platform-thruster technology in vanilla-changes.lua.
+    type = "item",
+    name = "cataclysm-survey-pack",
+    localised_description = {"item-description.science-pack"},
+    icon = "__cataclysm__/graphics/icons/cataclysm-survey-pack.png",
+    icon_size = 128,
+    subgroup = "science-pack",
+    order = "k-b[cataclysm-survey-pack]",
+    stack_size = science.stack_size,
+    weight = science.weight
+  },
 
   -- Machines ----------------------------------------------------------------
   {

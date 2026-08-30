@@ -37,6 +37,7 @@
 | Промежуточный | **Кристалл астрита** | `astrite-crystal` |
 | Промежуточный | **Вольтовая решётка** | `cataclysm-voltaic-lattice` |
 | Наука | **Катаклизмический научный пакет** | `cataclysmic-science-pack` |
+| Наука | **Катаклизмический разведывательный набор** | `cataclysm-survey-pack` |
 | Здание | **Экстрактор конденсата** | `condensate-extractor` |
 | Здание | **Грозовой сифон** | `storm-siphon` |
 | Здание | **Штормовая плавильня** | `storm-foundry` |
@@ -56,22 +57,29 @@
 Производственный цикл: руда → пластина → вольтовая решётка; конденсат →
 зарядка молниями → заряженный конденсат → топливо генератора и наука.
 
-## Технологии (12)
+## Технологии (13)
 
 | Технология | Название (RU) | Внутреннее имя |
 |---|---|---|
-| 1 | **Добыча конденсата** | `cataclysm-condensate-extraction` |
-| 2 | **Обработка штормита** | `cataclysm-stormite-processing` |
-| 3 | **Грозовой сифон** | `cataclysm-storm-siphon` |
-| 4 | **Очистка астрита** | `cataclysm-astrite-refining` |
-| 5 | **Вольтовая решётка** | `cataclysm-voltaic-lattice` |
-| 6 | **Катаклизмический научный пакет** | `cataclysmic-science-pack` |
-| 7 | **Штормовой генератор** | `cataclysm-storm-generator` |
-| 8 | **Защита от молний** | `cataclysm-lightning-protection` |
-| 9 | **Сейсмостабилизация** | `cataclysm-seismic-stabilization` |
-| 10 | **Штормовая защита платформ** | `cataclysm-storm-platform-shield` |
-| 11 | **Катаклизмическая продуктивность** | `cataclysm-productivity` |
-| 12 | **Штормовая логистика** | `cataclysm-storm-logistics` |
+| 1 | **Открытие Катаклизма** | `cataclysm-planet-discovery` |
+| 2 | **Добыча конденсата** | `cataclysm-condensate-extraction` |
+| 3 | **Обработка штормита** | `cataclysm-stormite-processing` |
+| 4 | **Грозовой сифон** | `cataclysm-storm-siphon` |
+| 5 | **Очистка астрита** | `cataclysm-astrite-refining` |
+| 6 | **Вольтовая решётка** | `cataclysm-voltaic-lattice` |
+| 7 | **Катаклизмический научный пакет** | `cataclysmic-science-pack` |
+| 8 | **Штормовой генератор** | `cataclysm-storm-generator` |
+| 9 | **Защита от молний** | `cataclysm-lightning-protection` |
+| 10 | **Сейсмостабилизация** | `cataclysm-seismic-stabilization` |
+| 11 | **Штормовая защита платформ** | `cataclysm-storm-platform-shield` |
+| 12 | **Катаклизмическая продуктивность** | `cataclysm-productivity` |
+| 13 | **Штормовая логистика** | `cataclysm-storm-logistics` |
+
+Первичная переработка открывается триггерами добычи/создания (добыл штормит →
+обработка, создал плавильню → сифон, создал пластины → очистка астрита,
+создал кристаллы → решётка, создал решётку → наука). Открытие планеты
+оплачивается новым `cataclysm-survey-pack` (крафт до полёта, рецепт даёт
+ванильная технология `space-platform-thruster`).
 
 ## Тайлы (4)
 
