@@ -3,13 +3,18 @@
 Готовые к установке архивы мода. Файл вида `cataclysm_<version>.zip` положите
 в папку `mods/` вашей установки Factorio (не распаковывая).
 
+- `cataclysm_0.2.1.zip` — 0.2.1: исправлен краш загрузки — все
+  produce-achievement получили обязательный ключ `limited_to_one_game`
+  (ProduceAchievementPrototype в 2.1.17); проверка ачивок в
+  tools/check_lua.py ужесточена (break-test).
 - `cataclysm_0.2.0.zip` — 0.2.0: молнии как на Фульгоре (та же графика/звук,
   только цветной фильтр — фиолетовый), в 2 раза чаще (1/(60*5) на чанк),
   в 1.5 раза сильнее по урону (150 electric) и в 2 раза по энергии (2GJ,
   буфер сифона 2GJ). Полный аудит всех прототипов по lua-api 2.1.17 —
   удалены 2 недокументированных поля (`resource_category`, `fluid`);
   новая статическая проверка полей (84 прототипа). Спецификация:
-  docs/LIGHTNING.md, docs/API-AUDIT.md.
+  docs/LIGHTNING.md, docs/API-AUDIT.md. Не грузилась без
+  `limited_to_one_game` — заменена на 0.2.1.
 - `cataclysm_0.1.2.zip` — 0.1.2: исправлен краш загрузки на Factorio 2.x
   (build-entity-achievement: `entity` → `to_build`; deplete-resource-achievement
   переведён на скриптовое открытие — в 2.x у него нет поля `resource`).

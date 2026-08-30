@@ -1,6 +1,26 @@
 ---------------------------------------------------------------------------------------------------
 -- Cataclysm (planet mod for Factorio Space Age)
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.1
+Date: 2026-08-30
+  Changes:
+    - Fixed load crash on Factorio 2.1: produce-achievement requires the
+      `limited_to_one_game` key (ProduceAchievementPrototype in 2.1.17 has it
+      as a required property; without it the game fails to load with
+      'Key "limited_to_one_game" not found in property tree'). Added
+      `limited_to_one_game = true` to all 7 produce-achievements
+      (cataclysm-first-plate, cataclysm-charged-10k,
+      cataclysm-deplete-stormite and the 4 scripted story achievements).
+      produce-per-hour-achievement has no such field (verified against docs
+      and vanilla data) and is untouched.
+    - tools/check_lua.py: check_achievements now requires
+      `limited_to_one_game` on produce-achievement and rejects it on
+      produce-per-hour-achievement (break-tested).
+    - docs/API-AUDIT.md: finding #3 recorded.
+    - Release archive rebuilt as cataclysm_0.2.1.zip (0.2.0 did not load and
+      was removed).
+
+---------------------------------------------------------------------------------------------------
 Version: 0.2.0
 Date: 2026-08-30
   Changes:

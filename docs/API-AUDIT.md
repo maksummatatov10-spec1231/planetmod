@@ -51,7 +51,7 @@
 | `noise-function` (NamedNoiseFunction) | map-gen.lua | type, name, parameters, expression | ✅ |
 | `int-setting` / `bool-setting` (мод-настройки, официальная вики) | settings.lua | type, name, setting_type, default_value, minimum_value, maximum_value, order | ✅ по Tutorial:Mod_settings (страницы прототипа в lua-api нет — настройки определяются на settings-стадии) |
 | `build-entity-achievement` (BuildEntityAchievementPrototype) | achievements.lua | type, name, order, to_build, amount, icon, icon_size | ✅ `to_build` обязателен (проверка `check_achievements`) |
-| `produce-achievement` (ProduceAchievementPrototype) | achievements.lua | type, name, order, item_product, amount, icon, icon_size | ✅ |
+| `produce-achievement` (ProduceAchievementPrototype) | achievements.lua | type, name, order, item_product, amount, limited_to_one_game, icon, icon_size | ✅ `item_product`/`amount` обязательны; `limited_to_one_game` — ОБЯЗАТЕЛЬНОЕ поле (без него движок падает «Key not found»; найдено в 0.2.1, см. §4) |
 | `produce-per-hour-achievement` (ProducePerHourAchievementPrototype) | achievements.lua | type, name, order, item_product, amount, icon, icon_size | ✅ |
 | `research-with-science-pack-achievement` (ResearchWithSciencePackAchievementPrototype) | achievements.lua | type, name, order, science_pack, icon, icon_size | ✅ `science_pack` обязателен |
 | `change-surface-achievement` (ChangedSurfaceAchievementPrototype) | achievements.lua | type, name, order, surface, icon, icon_size | ✅ `surface` подтверждён |
@@ -114,6 +114,17 @@ asteroid_spawn_influence, asteroid_spawn_definitions, persistent_ambient_sounds.
    **Удалено**, оставлен корректный `fluid_box.filter` (документированное поле
    FluidBox). Игра молча игнорировала поле; поведение не изменилось, но теперь
    каждое поле соответствует документации.
+3. **Отсутствовал обязательный `limited_to_one_game` у всех
+   `produce-achievement`** — ProduceAchievementPrototype (2.1.17) требует это
+   поле (в доках оно без маркера «optional»; ваниль всегда задаёт его, чаще
+   `false`). Без него игра не грузит мод: «Key "limited_to_one_game" not found
+   in property tree at ROOT.produce-achievement...». **Добавлено
+   `limited_to_one_game = true`** во все 7 produce-achievements (4 scripted +
+   first-plate + charged-10k + deplete-stormite). У
+   `produce-per-hour-achievement` этого поля НЕТ (проверено докой и ванилью),
+   туда оно не добавлено. Проверка `check_achievements` теперь требует его у
+   produce-achievement и запрещает у produce-per-hour-achievement
+   (break-test пройден).
 
 Других расхождений не найдено: 84 прототипа мода прошли пословную сверку полей.
 

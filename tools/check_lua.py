@@ -193,8 +193,12 @@ def check_achievements():
         with `resource` silently loses the target; mod uses scripted unlock.
       * change-surface-achievement requires `surface`.
       * research-with-science-pack-achievement requires `science_pack`.
-      * produce-achievement / produce-per-hour-achievement require
-        `item_product` and `amount`."""
+      * produce-achievement requires `item_product`, `amount` AND
+        `limited_to_one_game` (required by ProduceAchievementPrototype in
+        2.1.17; the engine fails to load without it).
+      * produce-per-hour-achievement requires `item_product` and `amount`
+        and must NOT have `limited_to_one_game` (no such field on
+        ProducePerHourAchievementPrototype)."""
     path = os.path.join(ROOT, "prototypes", "achievements.lua")
     with open(path, "r", encoding="utf-8") as fh:
         source = fh.read()
@@ -244,11 +248,20 @@ def check_achievements():
         elif t == "research-with-science-pack-achievement":
             if field_value(node, "science_pack") is None:
                 fail("achievement %s: research-with-science-pack-achievement requires `science_pack`" % name)
-        elif t in ("produce-achievement", "produce-per-hour-achievement"):
+        elif t == "produce-achievement":
             if field_value(node, "item_product") is None:
-                fail("achievement %s: %s requires `item_product`" % (name, t))
+                fail("achievement %s: produce-achievement requires `item_product`" % name)
             if field_value(node, "amount") is None:
-                fail("achievement %s: %s requires `amount`" % (name, t))
+                fail("achievement %s: produce-achievement requires `amount`" % name)
+            if field_value(node, "limited_to_one_game") is None:
+                fail("achievement %s: produce-achievement requires `limited_to_one_game` (engine fails to load without it)" % name)
+        elif t == "produce-per-hour-achievement":
+            if field_value(node, "item_product") is None:
+                fail("achievement %s: produce-per-hour-achievement requires `item_product`" % name)
+            if field_value(node, "amount") is None:
+                fail("achievement %s: produce-per-hour-achievement requires `amount`" % name)
+            if has_key(node, "limited_to_one_game"):
+                fail("achievement %s: produce-per-hour-achievement has no `limited_to_one_game` field" % name)
     print("OK   achievements checked:", checked)
 
 

@@ -12,6 +12,7 @@ local function scripted(name, order, icon)
     order = order,
     item_product = "cataclysmic-science-pack",
     amount = 1000000000, -- unreachable by production; script unlocks it
+    limited_to_one_game = true, -- required by ProduceAchievementPrototype (2.1.17)
     icon = "__cataclysm__/graphics/achievement/" .. icon .. ".png",
     icon_size = 128
   }
@@ -41,6 +42,7 @@ data:extend({
     order = "a[progress]-h[cataclysm]-a[first-plate]",
     item_product = "stormite-plate",
     amount = 1,
+    limited_to_one_game = true,
     icon = "__cataclysm__/graphics/achievement/first-stormite-plate.png",
     icon_size = 128
   },
@@ -53,6 +55,7 @@ data:extend({
     order = "a[progress]-h[cataclysm]-b[charged-10k]",
     item_product = "cataclysm-voltaic-lattice",
     amount = 1000000000,
+    limited_to_one_game = true,
     icon = "__cataclysm__/graphics/achievement/charged-condensate-10k.png",
     icon_size = 128
   },
@@ -74,6 +77,7 @@ data:extend({
     order = "a[progress]-h[cataclysm]-d[deplete-stormite]",
     item_product = "cataclysmic-science-pack",
     amount = 1000000000,
+    limited_to_one_game = true,
     icon = "__cataclysm__/graphics/achievement/deplete-stormite-patch.png",
     icon_size = 128
   },
