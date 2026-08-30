@@ -1,6 +1,33 @@
 ---------------------------------------------------------------------------------------------------
 -- Cataclysm (planet mod for Factorio Space Age)
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 2026-08-30
+  Changes:
+    - Lightning rework: the planet's lightning is now exactly the Fulgora
+      lightning (identical graphics, animation, sound and timing — deep copy
+      of the vanilla "lightning" entity) with only a color filter applied
+      (violet shader_configuration colors + violet light color instead of the
+      vanilla light blue), and it is more frequent and stronger than Fulgora:
+        * strike rate 1/(60*5) per chunk per tick (2x Fulgora's 1/(60*10));
+        * per-strike damage 150 electric (Fulgora: 100);
+        * per-strike energy 2GJ (Fulgora: 1GJ), storm siphon buffer raised to
+          2GJ so a single strike still fully charges it (1:1 like Fulgora).
+      Full spec: docs/LIGHTNING.md.
+    - Full prototype audit against the official lua-api 2.1.17 documentation
+      and vanilla data (every type the mod defines, every field checked):
+      docs/API-AUDIT.md. Two undocumented fields removed (silently ignored by
+      the engine before, now impossible):
+        * `resource_category` on autoplace-control (no such field);
+        * top-level `fluid` on the condensate-extractor (no such field on
+          OffshorePumpPrototype; the pump derives its fluid from the tile,
+          the fluid_box filter stays).
+    - tools/check_lua.py: new check_prototype_fields() validates every
+      data:extend prototype against per-type field allowlists derived from
+      lua-api 2.1.17 (84 prototypes checked; break-tested).
+    - Release archive rebuilt as cataclysm_0.2.0.zip.
+
+---------------------------------------------------------------------------------------------------
 Version: 0.1.2
 Date: 2026-08-30
   Changes:

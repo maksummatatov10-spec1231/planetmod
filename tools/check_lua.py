@@ -252,6 +252,232 @@ def check_achievements():
     print("OK   achievements checked:", checked)
 
 
+# ---------------------------------------------------------------------------
+# Prototype field allowlists.
+#
+# Every top-level key of every prototype the mod defines in data stage must
+# be a documented field of that prototype type (lua-api.factorio.com/latest,
+# version 2.1.17). Sources: docs/API-AUDIT.md. Deep-copies (entities.lua,
+# tiles.lua, lightning.lua) inherit validity from the vanilla prototype and
+# are validated by the audit doc instead of statically.
+# ---------------------------------------------------------------------------
+
+# Generic fields: PrototypeBase + Prototype (valid on every prototype type).
+_BASE = {
+    "type", "name", "order",
+    "localised_name", "localised_description", "factoriopedia_description",
+    "subgroup", "hidden", "hidden_in_factoriopedia", "parameter",
+    "icons", "icon", "icon_size",
+    "factoriopedia_alternative", "custom_tooltip_fields", "factoriopedia_simulation",
+}
+
+# EntityPrototype fields shared by entities defined from scratch.
+_ENTITY = _BASE | {
+    "flags", "minable", "max_health", "collision_box", "collision_mask",
+    "selection_box", "render_layer", "autoplace", "map_color",
+}
+
+# {prototype type: allowed top-level fields}. Only types the mod defines in
+# data stage with an explicit `type =` field are checked.
+PROTO_FIELDS = {
+    "item": _BASE | {
+        "stack_size", "weight", "durability", "durability_description_key",
+        "durability_description_value", "place_result",
+        "place_as_equipment_result", "fuel_category", "burnt_result",
+        "spoil_result", "spoil_quality_min", "spoil_quality_max",
+        "spoil_quality_change", "dark_background_icons", "dark_background_icon",
+        "dark_background_icon_size", "rocket_launch_products",
+    },
+    "fluid": _BASE | {
+        "default_temperature", "max_temperature", "heat_capacity",
+        "base_color", "flow_color", "visualization_color",
+        "pressure_to_speed_ratio", "flow_to_energy_ratio", "gas_temperature",
+        "fuel_value", "emissions_multiplier", "draw_as_glow", "auto_barrel",
+        "spent_fluid", "hidden_in_factoriopedia",
+    },
+    "recipe": _BASE | {
+        "categories", "ingredients", "results", "main_product",
+        "energy_required", "enabled", "allow_productivity",
+        "maximum_productivity", "emissions_multiplier",
+        "requester_paste_multiplier", "overload_multiplier",
+        "allow_inserter_overload", "hide_from_stats",
+        "hide_from_player_crafting", "hide_from_bonus_gui",
+        "allow_decomposition", "allow_as_intermediate",
+        "always_show_products", "always_show_ingredients",
+        "crafting_machine_tint", "ignore_productivity",
+        "show_in_recipe_book", "hidden_from_recipe_book",
+    },
+    "recipe-category": _BASE,
+    "technology": _BASE | {
+        "unit", "research_trigger", "prerequisites", "effects", "max_level",
+        "upgrade", "enabled", "essential", "visible_when_disabled",
+        "ignore_tech_cost_multiplier", "allows_productivity",
+        "show_levels_info",
+    },
+    "item-group": _BASE | {"order_in_recipe"},
+    "item-subgroup": _BASE | {"group"},
+    "autoplace-control": _BASE | {
+        "category", "richness", "can_be_disabled",
+        "related_to_fight_achievements",
+    },
+    "resource": _ENTITY | {
+        "stages", "stage_counts", "infinite", "highlight",
+        "randomize_visual_position", "map_grid", "minimum", "normal",
+        "infinite_depletion_amount", "resource_patch_search_radius",
+        "category", "walking_sound", "driving_sound", "stages_effect",
+        "effect_animation_period", "effect_animation_period_deviation",
+        "effect_darkness_multiplier", "min_effect_alpha", "max_effect_alpha",
+        "tree_removal_probability", "tree_removal_max_distance",
+        "mining_visualisation_tint",
+    },
+    "simple-entity": _ENTITY | {
+        "count_as_rock_for_filtered_deconstruction", "secondary_draw_order",
+        "random_animation_offset", "random_variation_on_create",
+        "shuffled_variation_on_chunk_generated", "pictures", "picture",
+        "animations", "lower_render_layer", "lower_pictures",
+        "stateless_visualisation_variations", "healing_per_tick",
+        "repair_speed_modifier", "dying_explosion", "dying_trigger_effect",
+        "damaged_trigger_effect", "loot", "order",
+    },
+    "sound": _BASE | {
+        "category", "priority", "aggregation", "allow_random_repeat",
+        "audible_distance_modifier", "game_controller_vibration_data",
+        "advanced_volume_control", "speed_smoothing_window_size",
+        "variations", "filename", "volume", "min_volume", "max_volume",
+        "preload", "speed", "min_speed", "max_speed", "modifiers",
+    },
+    "planet": _BASE | {
+        "map_gen_settings", "pollutant_type", "persistent_ambient_sounds",
+        "surface_render_parameters", "player_effects",
+        "ticks_between_player_effects", "surface_properties",
+        "lightning_properties", "map_seed_offset", "entities_require_heating",
+        "gravity_pull", "distance", "orientation", "magnitude",
+        "parked_platforms_orientation", "label_orientation", "draw_orbit",
+        "solar_power_in_space", "asteroid_spawn_influence", "fly_condition",
+        "auto_save_on_first_trip", "procession_graphic_catalogue",
+        "procession_audio_catalogue", "platform_procession_set",
+        "planet_procession_set", "starmap_icons", "starmap_icon",
+        "starmap_icon_size", "starmap_icon_orientation",
+        "asteroid_spawn_definitions", "platform_surface_render_parameters",
+    },
+    "space-connection": _BASE | {
+        "from", "to", "length", "asteroid_spawn_definitions",
+    },
+    "noise-expression": _BASE | {"expression", "local_expressions"},
+    "noise-function": _BASE | {"parameters", "expression"},
+    "build-entity-achievement": _BASE | {
+        "to_build", "amount", "limited_to_one_game", "within",
+    },
+    "produce-achievement": _BASE | {
+        "amount", "limited_to_one_game", "item_product", "fluid_product",
+    },
+    "produce-per-hour-achievement": _BASE | {
+        "amount", "item_product", "fluid_product",
+    },
+    "research-with-science-pack-achievement": _BASE | {"science_pack", "amount"},
+    "change-surface-achievement": _BASE | {"surface"},
+    "int-setting": _BASE | {
+        "setting_type", "default_value", "minimum_value", "maximum_value",
+        "allowed_values",
+    },
+    "bool-setting": _BASE | {"setting_type", "default_value"},
+}
+
+
+def _table_type_str(field_value):
+    if isinstance(field_value, astnodes.String):
+        v = field_value.s
+        if isinstance(v, bytes):
+            v = v.decode("utf-8")
+        return v
+    return None
+
+
+def _extend_entries(tree):
+    """Yield the Table nodes that are direct entries of a `data:extend({...})`
+    call — i.e. actual data-stage prototypes. Nested tables (products,
+    ingredients, effects, rules) are not prototypes and must not be checked."""
+    for node in ast.walk(tree):
+        is_extend = False
+        if isinstance(node, astnodes.Invoke):  # data:extend({...})
+            is_extend = (isinstance(node.source, astnodes.Name)
+                         and node.source.id == "data"
+                         and isinstance(node.func, astnodes.Name)
+                         and node.func.id == "extend")
+            args = node.args
+        elif isinstance(node, astnodes.Call):  # data.extend({...})
+            func = node.func
+            is_extend = (isinstance(func, astnodes.Index)
+                         and isinstance(func.value, astnodes.Name)
+                         and func.value.id == "data"
+                         and func.idx is not None
+                         and getattr(func.idx, "id", None) == "extend")
+            args = node.args
+        else:
+            continue
+        if not is_extend:
+            continue
+        if not args or not isinstance(args[0], astnodes.Table):
+            continue
+        for entry in args[0].fields:
+            if isinstance(entry.value, astnodes.Table):
+                yield entry.value
+
+
+def check_prototype_fields():
+    """Every data-stage prototype the mod defines with an explicit `type`
+    must only use documented fields for that prototype type (allowlists
+    above, derived from lua-api 2.1.17 — see docs/API-AUDIT.md). Catches
+    dead fields like `resource_category` on autoplace-control (no such field)
+    before they ever reach the game."""
+    checked = 0
+    for path in all_lua_files():
+        rel = os.path.relpath(path, ROOT)
+        if not rel.endswith(".lua") or rel.startswith("release") or rel.startswith("tools"):
+            continue
+        with open(path, "r", encoding="utf-8") as fh:
+            source = fh.read()
+        try:
+            tree = ast.parse(source)
+        except Exception:
+            continue  # syntax errors are reported by check_syntax
+        for entry in _extend_entries(tree):
+            type_field = None
+            for field in entry.fields:
+                key = field.key
+                if isinstance(key, astnodes.Name) and key.id == "type":
+                    type_field = field.value
+                    break
+            if type_field is None:
+                continue
+            t = _table_type_str(type_field)
+            if t is None or t not in PROTO_FIELDS:
+                continue
+            allowed = PROTO_FIELDS[t]
+            for field in entry.fields:
+                key = field.key
+                if not isinstance(key, astnodes.Name):
+                    continue
+                if key.id not in allowed:
+                    fail("%s: %s '%s' has undocumented field `%s` "
+                         "(lua-api 2.1.17, see docs/API-AUDIT.md)"
+                         % (rel, t, _proto_name(entry), key.id))
+            checked += 1
+    print("OK   prototype fields checked:", checked)
+
+
+def _proto_name(table_node):
+    for field in table_node.fields:
+        key = field.key
+        if isinstance(key, astnodes.Name) and key.id == "name":
+            if isinstance(field.value, astnodes.String):
+                v = field.value.s
+                if isinstance(v, bytes):
+                    v = v.decode("utf-8")
+                return v
+    return "<unnamed>"
+
+
 def main():
     check_syntax()
     check_graphics_refs()
@@ -260,6 +486,7 @@ def main():
     check_recipe_categories()
     check_achievements()
     check_icon_files()
+    check_prototype_fields()
     print()
     if failures:
         print("%d FAILURE(S)" % len(failures))

@@ -4,7 +4,7 @@
 
 ```
 planetmod/
-├── info.json                  # метаданные мода (cataclysm 0.1.2, 2.1)
+├── info.json                  # метаданные мода (cataclysm 0.2.0, 2.1)
 ├── data.lua                   # новые прототипы (точка входа data-стадии)
 ├── data-updates.lua           # аккуратные правки чужих прототипов (сейчас пусто)
 ├── data-final-fixes.lua       # lab.inputs (science pack), аддитивные патчи

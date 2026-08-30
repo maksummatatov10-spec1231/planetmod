@@ -7,7 +7,6 @@ data:extend({
     name = "stormite_ore",
     order = "b-e",
     category = "resource",
-    resource_category = "basic-solid",
     richness = true
   },
   {
@@ -15,7 +14,6 @@ data:extend({
     name = "astrite_ore",
     order = "b-f",
     category = "resource",
-    resource_category = "basic-solid",
     richness = true
   }
 })

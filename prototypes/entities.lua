@@ -15,14 +15,17 @@ end
 
 data:extend({
   -- Condensate extractor: pumps storm condensate from cataclysm lake tiles.
-  -- Modeled on the vanilla offshore-pump.
+  -- Modeled on the vanilla offshore-pump. In 2.x the offshore pump derives
+  -- its output fluid from the tile it stands on (cataclysm-lake / -deep have
+  -- fluid = "cataclysm-storm-condensate"); the fluid_box filter additionally
+  -- enforces the fluid (OffshorePumpPrototype has no top-level `fluid`
+  -- field — verified against lua-api 2.1.17, docs/API-AUDIT.md).
   clear_surface_conditions((function()
     local e = table.deepcopy(data.raw["offshore-pump"]["offshore-pump"])
     e.name = "condensate-extractor"
     e.icon = "__cataclysm__/graphics/icons/condensate-extractor.png"
     e.minable = { mining_time = 0.1, result = "condensate-extractor" }
     e.fast_replaceable_group = "condensate-extractor"
-    e.fluid = "cataclysm-storm-condensate"
     e.fluid_box = table.deepcopy(e.fluid_box)
     e.fluid_box.filter = "cataclysm-storm-condensate"
     e.dying_explosion = "small-explosion"
@@ -40,7 +43,9 @@ data:extend({
     e.fast_replaceable_group = "storm-siphon"
     if e.energy_source then
       e.energy_source = table.deepcopy(e.energy_source)
-      e.energy_source.buffer_capacity = "500MJ"
+      -- Buffer matches the 2GJ strike energy (vanilla collector: 1GJ buffer
+      -- vs 1GJ strikes), so a single strike fully charges the siphon.
+      e.energy_source.buffer_capacity = "2GJ"
     end
     return e
   end)()),

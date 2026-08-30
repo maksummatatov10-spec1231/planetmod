@@ -36,9 +36,11 @@ data:extend({
       gravity = 12
     },
     lightning_properties = {
-      -- Higher than Fulgora's 1/(60*10): ~1 strike per chunk every 6 seconds.
-      -- Per-strike damage/energy are lower (see cataclysm-lightning).
-      lightnings_per_chunk_per_tick = 1 / (60 * 6),
+      -- 2x Fulgora's rate (Fulgora: 1/(60*10)): ~1 strike per chunk every
+      -- 5 seconds. Per-strike damage/energy are higher than Fulgora's
+      -- (150 electric / 2GJ, see cataclysm-lightning) — more frequent AND
+      -- stronger, per the design spec (docs/LIGHTNING.md).
+      lightnings_per_chunk_per_tick = 1 / (60 * 5),
       search_radius = 12.0,
       lightning_types = { "cataclysm-lightning" },
       lightning_multiplier_at_day = 0.25,
