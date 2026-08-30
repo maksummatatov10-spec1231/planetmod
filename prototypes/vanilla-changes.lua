@@ -4,8 +4,17 @@
 local function add_cataclysmic_pack_to_labs()
   for _, lab in pairs(data.raw.lab) do
     local inputs = lab.inputs
-    if inputs and table.find(inputs, "cryogenic-science-pack") then
-      if not table.find(inputs, "cataclysmic-science-pack") then
+    if inputs then
+      local has_cryo = false
+      local has_ours = false
+      for _, name in ipairs(inputs) do
+        if name == "cryogenic-science-pack" then
+          has_cryo = true
+        elseif name == "cataclysmic-science-pack" then
+          has_ours = true
+        end
+      end
+      if has_cryo and not has_ours then
         table.insert(inputs, "cataclysmic-science-pack")
         table.sort(inputs)
       end

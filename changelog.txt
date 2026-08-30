@@ -41,6 +41,12 @@ Date: 2026-08-30
       sounds inherited from their vanilla source entities.
     - Fixed load crash: the storm generator now copies the steam-turbine
       prototype (data.raw.generator.turbine does not exist in Factorio 2.x).
+    - Fixed load crash: recipes used the pre-2.0 `category` field; replaced
+      with `categories = { ... }` (RecipePrototype in 2.x merged category and
+      additional_categories into the categories table). tools/check_lua.py now
+      enforces this (AST check, verified against a deliberately broken copy).
+    - Hardened vanilla-changes.lua: removed the `table.find` call (not used by
+      any vanilla data in 2.x) in favour of a plain loop.
     - HD graphics stage: all item/fluid icons regenerated natively at 128x128
       (icon_size 128, transparent, grid-friendly margins); decorative sprites
       redrawn at 256x256 and rendered at scale 0.5 (2 tiles tall,

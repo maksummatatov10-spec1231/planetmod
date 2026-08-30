@@ -6,7 +6,7 @@ data:extend({
   {
     type = "recipe",
     name = "cataclysm-stormite-plate",
-    category = "cataclysm-smelting",
+    categories = { "cataclysm-smelting" },
     enabled = false,
     energy_required = 4,
     ingredients = {
@@ -21,7 +21,7 @@ data:extend({
   {
     type = "recipe",
     name = "cataclysm-astrite-crystal",
-    category = "cataclysm-smelting",
+    categories = { "cataclysm-smelting" },
     enabled = false,
     energy_required = 6,
     ingredients = {
@@ -38,7 +38,7 @@ data:extend({
   {
     type = "recipe",
     name = "cataclysm-charge-condensate",
-    category = "cataclysm-charging",
+    categories = { "cataclysm-charging" },
     enabled = false,
     energy_required = 2,
     ingredients = {
@@ -52,7 +52,7 @@ data:extend({
   {
     type = "recipe",
     name = "cataclysm-discharge-condensate",
-    category = "cataclysm-charging",
+    categories = { "cataclysm-charging" },
     enabled = false,
     energy_required = 0.5,
     ingredients = {
@@ -68,7 +68,7 @@ data:extend({
   {
     type = "recipe",
     name = "cataclysm-voltaic-lattice",
-    category = "cataclysm-crafting",
+    categories = { "cataclysm-crafting" },
     enabled = false,
     energy_required = 10,
     ingredients = {
@@ -84,7 +84,7 @@ data:extend({
   {
     type = "recipe",
     name = "cataclysmic-science-pack",
-    category = "cataclysm-crafting",
+    categories = { "cataclysm-crafting" },
     enabled = false,
     energy_required = 30,
     ingredients = {
@@ -102,7 +102,7 @@ data:extend({
   {
     type = "recipe",
     name = "condensate-extractor",
-    category = "cataclysm-crafting",
+    categories = { "cataclysm-crafting" },
     enabled = false,
     energy_required = 2,
     ingredients = {
@@ -114,7 +114,7 @@ data:extend({
   {
     type = "recipe",
     name = "storm-siphon",
-    category = "cataclysm-crafting",
+    categories = { "cataclysm-crafting" },
     enabled = false,
     energy_required = 5,
     ingredients = {
@@ -127,7 +127,7 @@ data:extend({
   {
     type = "recipe",
     name = "storm-foundry",
-    category = "cataclysm-crafting",
+    categories = { "cataclysm-crafting" },
     enabled = false,
     energy_required = 5,
     ingredients = {
@@ -140,7 +140,7 @@ data:extend({
   {
     type = "recipe",
     name = "storm-fabricator",
-    category = "cataclysm-crafting",
+    categories = { "cataclysm-crafting" },
     enabled = false,
     energy_required = 8,
     ingredients = {
@@ -153,7 +153,7 @@ data:extend({
   {
     type = "recipe",
     name = "storm-generator",
-    category = "cataclysm-crafting",
+    categories = { "cataclysm-crafting" },
     enabled = false,
     energy_required = 10,
     ingredients = {
