@@ -1,0 +1,3 @@
+-- Cataclysm — data-updates stage.
+-- Reserved for careful, additive fixes to prototypes of OTHER mods that must run
+-- after their data stage but before data-final-fixes. Currently empty.

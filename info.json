@@ -1,0 +1,17 @@
+{
+  "name": "cataclysm",
+  "version": "0.1.0",
+  "title": "Cataclysm",
+  "author": "Arena (planetmod project)",
+  "homepage": "https://github.com/maksummatatov10-spec1231/planetmod",
+  "description": "A late-game planet for Factorio Space Age: Cataclysm, a storm-wracked world beyond Aquilo with its own ore, electrolyte economy, science pack, technologies and achievements.",
+  "factorio_version": "2.1",
+  "dependencies": [
+    "base >= 2.1.0",
+    "space-age >= 2.1.0",
+    "? quality >= 2.1.0",
+    "? PlanetsLib",
+    "? space-exploration"
+  ],
+  "space_travel_required": true
+}

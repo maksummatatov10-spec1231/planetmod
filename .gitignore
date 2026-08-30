@@ -1,0 +1,9 @@
+# Factorio mod packaging
+*.zip
+# Local tooling
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+# Scratch / generated artifacts (icons are committed, scratch is not)
+scratch/

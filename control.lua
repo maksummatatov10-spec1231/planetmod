@@ -1,0 +1,9 @@
+-- Cataclysm — control stage (runtime scripting).
+--
+-- Stage 1 (research & design) complete. Runtime systems are planned:
+--   * superstorm scheduler + script-driven lightning (fallback: engine lightning only)
+--   * achievement unlocks that cannot be expressed with prototype conditions
+--   * on_surface_created hook for the Cataclysm surface
+--   * event-based tracking for scripted achievements
+--
+-- Skeleton: no runtime logic yet.
