@@ -18,3 +18,7 @@ Date: 2026-08-30
     - Static checks: tools/check_lua.py (syntax, graphics refs, locale parity, recipe unlock),
       tools/check_icons.py (PNG integrity/sizes).
     - Additive vanilla change only: cataclysmic science pack added to lab inputs.
+    - Optional PlanetsLib integration (data-updates): orbit-tree registration
+      (planet moves with Aquilo), borrowed Aquilo music, default import location.
+    - Dependency study documented in docs/DEPENDENCIES.md (PlanetsLib, flib, stdlib).
+    - Release packaging: tools/make_release.py -> release/cataclysm_0.1.0.zip.
