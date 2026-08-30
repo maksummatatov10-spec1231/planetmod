@@ -1,19 +1,20 @@
 -- Cataclysm — data stage entry point.
 --
--- Stage 1 (research & design) is complete; the prototype modules are being
--- built in later stages. Each module below is added as it lands, in load order.
---
--- Planned module list (see docs/ARCHITECTURE.md):
---   prototypes/autoplace-controls.lua
---   prototypes/item-group.lua
---   prototypes/items.lua
---   prototypes/fluids.lua
---   prototypes/recipes.lua
---   prototypes/entities/*.lua
---   prototypes/technologies.lua
---   prototypes/achievements.lua
---   prototypes/planet.lua        (planet + space-connection)
---   prototypes/tips-and-tricks.lua
---   prototypes/vanilla-changes.lua
+-- Order matters: groups → controls → items/fluids → categories → world objects
+-- (resources, tiles, decoratives) → machines → recipes → tech → achievements →
+-- map-gen → planet.
 
--- Skeleton: no prototypes yet. This file is intentionally a no-op for now.
+require("prototypes.item-group")
+require("prototypes.autoplace-controls")
+require("prototypes.items")
+require("prototypes.fluids")
+require("prototypes.recipe-categories")
+require("prototypes.resources")
+require("prototypes.tiles")
+require("prototypes.decoratives")
+require("prototypes.entities")
+require("prototypes.recipes")
+require("prototypes.technologies")
+require("prototypes.achievements")
+require("prototypes.map-gen")
+require("prototypes.planet")

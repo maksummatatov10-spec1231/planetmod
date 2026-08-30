@@ -4,7 +4,17 @@
 Version: 0.1.0
 Date: 2026-08-30
   Changes:
-    - Project skeleton and documentation (research, design, architecture).
-    - No playable content yet.
-
----------------------------------------------------------------------------------------------------
+    - Full playable planet "Cataclysm" beyond Aquilo (space connection aquilo-cataclysm).
+    - Map generation: Aquilo-style noise (islands, starting ore spots, storm condensate lakes).
+    - Natural risk: constant lightning (Fulgora-style) + scripted superstorm cycles (period setting).
+    - Resources: stormite ore, astrite ore (deep/rare); fluids: storm condensate, charged condensate.
+    - Machines: condensate extractor, storm siphon, storm foundry, storm fabricator, storm generator.
+    - Production loop: condensate -> charging (lightning) -> charged condensate -> power + science.
+    - New science pack: cataclysmic science pack (added to labs with cryogenic input).
+    - 12 technologies, 11 achievements (7 native + 4 scripted).
+    - Decoratives: crystal trees, cracked rocks, storm vents, ancient spires (spire reward).
+    - Localization: en, ru, de (all entities/recipes/techs/achievements/messages).
+    - Procedural graphics (PIL) for all icons, tech/achievement icons, ore sheets, decoratives.
+    - Static checks: tools/check_lua.py (syntax, graphics refs, locale parity, recipe unlock),
+      tools/check_icons.py (PNG integrity/sizes).
+    - Additive vanilla change only: cataclysmic science pack added to lab inputs.
