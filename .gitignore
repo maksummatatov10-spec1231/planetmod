@@ -1,5 +1,6 @@
 # Factorio mod packaging
 *.zip
+!release/*.zip
 # Local tooling
 __pycache__/
 *.pyc

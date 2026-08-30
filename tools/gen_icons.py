@@ -143,28 +143,28 @@ def save(img, name):
     print("wrote", name)
 
 
-# ---- items (64x64) ---------------------------------------------------------
+# ---- items (128x128 HD) -----------------------------------------------------
 
 def icon(name, draw_fn):
-    img = new_canvas(64)
-    draw_fn(ImageDraw.Draw(img), 32, 32, 22)
+    img = new_canvas(128)
+    draw_fn(ImageDraw.Draw(img), 64, 64, 44)
     save(img, f"icons/{name}.png")
 
 
 def item_ore_stormite(d, cx, cy, s):
     crystal_cluster(d, cx, cy - 2, s, PURPLE, (170, 130, 255, 255), seed=11)
-    bolt(d, cx + s * 0.5, cy - s * 1.1, cx - s * 0.2, cy - s * 0.1, width=2, color=STORM_YELLOW, seed=5)
+    bolt(d, cx + s * 0.5, cy - s * 1.1, cx - s * 0.2, cy - s * 0.1, width=3, color=STORM_YELLOW, seed=5)
 
 
 def item_ore_astrite(d, cx, cy, s):
-    shard(d, cx - 8, cy + 4, 16, SILVER, SILVER_LIGHT)
-    shard(d, cx + 10, cy + 2, 13, (120, 140, 165, 255), SILVER_LIGHT)
-    shard(d, cx + 1, cy - 8, 11, SILVER_LIGHT, (255, 255, 255, 255))
+    shard(d, cx - s * 0.36, cy + s * 0.18, s * 0.72, SILVER, SILVER_LIGHT)
+    shard(d, cx + s * 0.45, cy + s * 0.09, s * 0.6, (120, 140, 165, 255), SILVER_LIGHT)
+    shard(d, cx + s * 0.05, cy - s * 0.36, s * 0.5, SILVER_LIGHT, (255, 255, 255, 255))
 
 
 def item_plate(d, cx, cy, s):
     plate(d, cx, cy, s, (70, 45, 130, 255), (140, 105, 240, 255))
-    bolt(d, cx - s * 0.3, cy - s * 0.4, cx + s * 0.35, cy + s * 0.35, width=2, color=STORM_CYAN, seed=9)
+    bolt(d, cx - s * 0.3, cy - s * 0.4, cx + s * 0.35, cy + s * 0.35, width=3, color=STORM_CYAN, seed=9)
 
 
 def item_crystal(d, cx, cy, s):
@@ -180,8 +180,9 @@ def item_lattice(d, cx, cy, s):
         for sgn in (-1, 1):
             x0 = cx + sgn * math.cos(ang) * s * 0.75
             y0 = cy + sgn * math.sin(ang) * s * 0.75
-            d.line([(cx, cy), (x0, y0)], fill=STORM_CYAN, width=2)
-    d.ellipse([cx - 3, cy - 3, cx + 3, cy + 3], fill=STORM_YELLOW, outline=DARK_LINE)
+            d.line([(cx, cy), (x0, y0)], fill=STORM_CYAN, width=3)
+    r = s * 0.14
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=STORM_YELLOW, outline=DARK_LINE)
 
 
 def item_science(d, cx, cy, s):
@@ -190,12 +191,12 @@ def item_science(d, cx, cy, s):
 
 def item_extractor(d, cx, cy, s):
     machine_box(d, cx, cy, s * 1.1, (50, 40, 90, 255), (120, 100, 200, 255), accent=TEAL, roof=True)
-    droplet(d, cx, cy + 10, 7, TEAL, STORM_CYAN)
+    droplet(d, cx, cy + s * 0.45, s * 0.32, TEAL, STORM_CYAN)
 
 
 def item_siphon(d, cx, cy, s):
     machine_box(d, cx, cy, s * 1.05, (45, 35, 85, 255), (110, 90, 200, 255), accent=STORM_YELLOW, roof=True)
-    bolt(d, cx, cy - s * 1.5, cx, cy - s * 0.3, width=3, color=STORM_YELLOW, seed=4)
+    bolt(d, cx, cy - s * 1.2, cx, cy - s * 0.3, width=4, color=STORM_YELLOW, seed=4)
 
 
 def item_foundry(d, cx, cy, s):
@@ -206,22 +207,23 @@ def item_foundry(d, cx, cy, s):
 
 def item_fabricator(d, cx, cy, s):
     machine_box(d, cx, cy, s * 1.1, (55, 45, 100, 255), (130, 110, 220, 255), accent=STORM_CYAN)
-    d.ellipse([cx - 5, cy - 9, cx + 5, cy + 1], fill=STORM_YELLOW, outline=DARK_LINE)
+    r = s * 0.23
+    d.ellipse([cx - r, cy - s * 0.41, cx + r, cy + s * 0.05], fill=STORM_YELLOW, outline=DARK_LINE)
 
 
 def item_generator(d, cx, cy, s):
     machine_box(d, cx, cy, s * 1.1, (70, 50, 120, 255), (160, 120, 255, 255), accent=STORM_CYAN, roof=True)
-    bolt(d, cx - 8, cy + s * 0.35, cx + 8, cy + s * 0.7, width=2, color=STORM_YELLOW, seed=12)
+    bolt(d, cx - s * 0.36, cy + s * 0.35, cx + s * 0.36, cy + s * 0.7, width=3, color=STORM_YELLOW, seed=12)
 
 
-# ---- fluids (64x64) --------------------------------------------------------
+# ---- fluids (128x128 HD) --------------------------------------------------------
 
 def fluid(name, color, hi, seed=2, count=2):
-    img = new_canvas(64)
+    img = new_canvas(128)
     d = ImageDraw.Draw(img)
     rng = random.Random(seed)
     for i in range(count):
-        droplet(d, 20 + i * 24, 26 + (i % 2) * 14, 12, color, hi)
+        droplet(d, 30 + i * 38, 52 + (i % 2) * 28, 24, color, hi)
     save(img, f"icons/{name}.png")
 
 
@@ -427,52 +429,95 @@ def cell_astrite(d, cx, cy, s, seed):
         shard(d, cx + ox, cy + oy, rng.randint(12, 22), SILVER, SILVER_LIGHT)
 
 
-# ---- decorative entity art (128x128 single frames) -------------------------
+# ---- decorative entity art (256x256 HD frames, bottom-anchored) -------------
+# One on-screen pixel = 64 game px at scale 0.5, so a 256 px frame renders as
+# 128 px = 2 tiles tall. The artwork is drawn bottom-anchored: the object's
+# base sits on the bottom edge of the frame (y=256), which is the entity's
+# ground line (shift 0) — the sprite then grows upward out of its tile cell,
+# exactly like vanilla trees/rocks.
+
+ENT_BASE_Y = 236  # where the object's feet touch the ground line
 
 def entity_art(name, draw_fn):
-    img = new_canvas(128)
-    draw_fn(ImageDraw.Draw(img), 64, 64, 52)
+    img = new_canvas(256)
+    draw_fn(ImageDraw.Draw(img), 128, ENT_BASE_Y, 96)
     save(img, f"entity/{name}/{name}.png")
 
 
-def art_tree(d, cx, cy, s):
-    poly(d, [(cx - 8, cy + 40), (cx - 5, cy - 30), (cx + 6, cy - 40), (cx + 10, cy + 40)],
-         (70, 55, 120, 255), DARK_LINE, 3)
-    poly(d, [(cx - 6, cy - 36), (cx + 6, cy - 46), (cx + 14, cy - 18), (cx + 2, cy - 12)], (120, 90, 220, 255), DARK_LINE, 2)
-    poly(d, [(cx + 2, cy - 12), (cx - 18, cy - 22), (cx - 6, cy - 36)], (95, 70, 180, 255), DARK_LINE, 2)
-    bolt(d, cx - 12, cy - 48, cx + 4, cy - 30, width=2, color=STORM_CYAN, seed=4)
+def entity_anim(name, frame_draw_fn, frames):
+    """Animation as a square 2x2 grid of 256x256 frames (512x512 strip).
+    Frames are laid out left-to-right, then next row (line_length=2)."""
+    sheet = new_canvas(512)
+    for f in range(frames):
+        cell = new_canvas(256)
+        frame_draw_fn(ImageDraw.Draw(cell), 128, ENT_BASE_Y, 96, f)
+        sheet.paste(cell, ((f % 2) * 256, (f // 2) * 256), cell)
+    save(sheet, f"entity/{name}/{name}.png")
 
 
-def art_rock(d, cx, cy, s):
-    poly(d, [(cx - 34, cy + 26), (cx - 26, cy - 8), (cx - 6, cy - 26), (cx + 20, cy - 18), (cx + 34, cy + 6), (cx + 26, cy + 26)],
-         (55, 42, 96, 255), DARK_LINE, 3)
-    poly(d, [(cx - 26, cy - 8), (cx - 6, cy - 26), (cx + 6, cy - 4), (cx - 14, cy + 6)], (95, 75, 160, 255), None)
-    d.line([(cx - 6, cy - 26), (cx - 2, cy + 4)], fill=DARK_LINE, width=2)
-    d.line([(cx - 2, cy + 4), (cx + 12, cy + 14)], fill=DARK_LINE, width=2)
+def _mix(c1, c2, t):
+    return tuple(int(c1[i] + (c2[i] - c1[i]) * t) for i in range(3)) + (255,)
 
 
-def art_vent(d, cx, cy, s):
-    poly(d, [(cx - 20, cy + 34), (cx - 14, cy - 6), (cx + 14, cy - 6), (cx + 20, cy + 34)], (48, 36, 88, 255), DARK_LINE, 3)
-    poly(d, [(cx - 26, cy - 6), (cx + 26, cy - 6), (cx + 16, cy - 22), (cx - 16, cy - 22)], (80, 62, 140, 255), DARK_LINE, 2)
-    d.ellipse([cx - 14, cy - 22, cx + 14, cy - 2], fill=TEAL_DARK, outline=DARK_LINE, width=2)
-    bolt(d, cx - 6, cy - 40, cx + 8, cy - 24, width=2, color=STORM_YELLOW, seed=5)
-    poly(d, [(cx - 10, cy + 10), (cx + 10, cy + 10), (cx + 6, cy + 22), (cx - 6, cy + 22)], (30, 22, 60, 255), None)
+def art_tree(d, cx, cy, s, frame=0):
+    # Crystal tree: trunk + crystal crown, teal bolt flickers per frame.
+    flicker = (frame % 2 == 0)
+    hi_crown = _mix((120, 90, 220, 255), (180, 150, 255, 255), 0.35 if flicker else 0.0)
+    poly(d, [(cx - 16, cy), (cx - 10, cy - 96), (cx + 12, cy - 110), (cx + 20, cy)],
+         (70, 55, 120, 255), DARK_LINE, 4)
+    poly(d, [(cx - 10, cy - 96), (cx + 12, cy - 110), (cx + 14, cy - 60), (cx - 6, cy - 56)],
+         (105, 80, 190, 255), DARK_LINE, 2)
+    crystal_cluster(d, cx + 16, cy - 64, 44, (120, 90, 220, 255), hi_crown, seed=4)
+    crystal_cluster(d, cx - 20, cy - 60, 38, (95, 70, 180, 255), hi_crown, seed=5)
+    if flicker:
+        bolt(d, cx - 26, cy - 158, cx + 8, cy - 108, width=3, color=STORM_CYAN, seed=4)
 
 
-def art_spire(d, cx, cy, s):
-    poly(d, [(cx - 12, cy + 40), (cx - 6, cy - 34), (cx + 8, cy - 44), (cx + 14, cy + 40)],
-         (90, 70, 150, 255), DARK_LINE, 3)
-    poly(d, [(cx - 6, cy - 34), (cx + 8, cy - 44), (cx + 20, cy - 20), (cx + 4, cy - 12)], (150, 120, 255, 255), DARK_LINE, 2)
-    bolt(d, cx - 18, cy - 56, cx + 2, cy - 34, width=3, color=STORM_CYAN, seed=8)
-    poly(d, [(cx - 26, cy + 24), (cx - 14, cy + 40), (cx - 2, cy + 30), (cx - 14, cy + 18)], (70, 55, 120, 255), DARK_LINE, 2)
+def art_rock(d, cx, cy, s, frame=0):
+    # Cracked storm-blasted rock.
+    poly(d, [(cx - 68, cy), (cx - 52, cy - 60), (cx - 12, cy - 100), (cx + 40, cy - 80), (cx + 68, cy - 40), (cx + 52, cy)],
+         (55, 42, 96, 255), DARK_LINE, 4)
+    poly(d, [(cx - 52, cy - 60), (cx - 12, cy - 100), (cx + 4, cy - 44), (cx - 28, cy - 26)], (95, 75, 160, 255), None)
+    poly(d, [(cx + 4, cy - 44), (cx + 40, cy - 80), (cx + 46, cy - 40), (cx + 16, cy - 22)], (70, 55, 120, 255), None)
+    d.line([(cx - 12, cy - 100), (cx - 4, cy - 30)], fill=DARK_LINE, width=3)
+    d.line([(cx - 4, cy - 30), (cx + 24, cy - 6)], fill=DARK_LINE, width=3)
+    d.line([(cx - 52, cy - 60), (cx - 34, cy - 34)], fill=DARK_LINE, width=2)
+    d.line([(cx + 34, cy - 66), (cx + 24, cy - 34)], fill=DARK_LINE, width=2)
+
+
+def art_vent(d, cx, cy, s, frame=0):
+    # Storm vent with a pulsing condensate eye. 4-frame glow pulse.
+    phase = math.sin(2 * math.pi * frame / 4)
+    eye = _mix((30, 111, 107, 255), (120, 255, 235, 255), 0.45 + 0.45 * phase)
+    rim = _mix((80, 62, 140, 255), (150, 120, 255, 255), 0.3 + 0.3 * phase)
+    poly(d, [(cx - 40, cy), (cx - 28, cy - 64), (cx + 28, cy - 64), (cx + 40, cy)],
+         (48, 36, 88, 255), DARK_LINE, 4)
+    poly(d, [(cx - 52, cy - 64), (cx + 52, cy - 64), (cx + 32, cy - 88), (cx - 32, cy - 88)], rim, DARK_LINE, 3)
+    d.ellipse([cx - 28, cy - 84, cx + 28, cy - 34], fill=eye, outline=DARK_LINE, width=3)
+    if frame % 2 == 1:
+        bolt(d, cx - 12, cy - 132, cx + 16, cy - 98, width=3, color=STORM_YELLOW, seed=5)
+    if frame == 3:
+        bolt(d, cx - 20, cy - 140, cx + 4, cy - 108, width=2, color=STORM_CYAN, seed=6)
+    # condensate drip
+    poly(d, [(cx - 18, cy - 12), (cx + 18, cy - 12), (cx + 12, cy + 6), (cx - 12, cy + 6)], (30, 22, 60, 255), None)
+
+
+def art_spire(d, cx, cy, s, frame=0):
+    # Ancient spire: last remnant of the builders, cyan energy seam.
+    poly(d, [(cx - 24, cy), (cx - 12, cy - 120), (cx + 16, cy - 140), (cx + 28, cy)],
+         (90, 70, 150, 255), DARK_LINE, 4)
+    poly(d, [(cx - 12, cy - 120), (cx + 16, cy - 140), (cx + 40, cy - 64), (cx + 8, cy - 40)],
+         (150, 120, 255, 255), DARK_LINE, 2)
+    bolt(d, cx - 36, cy - 168, cx - 4, cy - 118, width=3, color=STORM_CYAN, seed=8)
+    poly(d, [(cx - 52, cy - 8), (cx - 28, cy + 6), (cx - 8, cy - 10), (cx - 28, cy - 24)], (70, 55, 120, 255), DARK_LINE, 3)
 
 
 def main2():
     ore_sheet("stormite-ore", cell_stormite)
     ore_sheet("astrite-ore", cell_astrite)
-    entity_art("cataclysm-crystal-tree", art_tree)
+    entity_anim("cataclysm-crystal-tree", art_tree, 3)
     entity_art("cataclysm-rock", art_rock)
-    entity_art("cataclysm-vent", art_vent)
+    entity_anim("cataclysm-vent", art_vent, 4)
     entity_art("cataclysm-ancient-spire", art_spire)
     print("done2")
 

@@ -38,11 +38,13 @@ def expected_size(rel_path, name):
     if parts[0] == "entity":
         if parts[1] in ("stormite-ore", "astrite-ore"):
             return 1024
-        return 128
+        # HD decoratives: animated ones are 2x2 grids of 256px frames (512),
+        # static ones are single 256px frames rendered at scale 0.5.
+        if parts[1] in ("cataclysm-vent", "cataclysm-crystal-tree"):
+            return 512
+        return 256
     if parts[0] == "icons":
-        if name == "cataclysm.png":
-            return 128
-        return 64
+        return 128
     return None  # unknown -> only integrity checks
 
 

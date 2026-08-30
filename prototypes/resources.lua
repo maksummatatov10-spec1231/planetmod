@@ -9,7 +9,7 @@ local function resource(name, order, mining_time, map_color, tint, subgroup)
     type = "resource",
     name = name,
     icon = "__cataclysm__/graphics/icons/" .. name .. ".png",
-    icon_size = 64,
+    icon_size = 128,
     flags = { "placeable-neutral" },
     order = "a-b-" .. order,
     tree_removal_probability = 0.8,
